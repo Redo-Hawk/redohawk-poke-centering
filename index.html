@@ -996,9 +996,20 @@ function compute(){
   const right =(dot(sub(o[1],i[1]),uX)+dot(sub(o[2],i[2]),uX))/2;
   const top   =(dot(sub(i[0],o[0]),uY)+dot(sub(i[1],o[1]),uY))/2;
   const bottom=(dot(sub(o[3],i[3]),uY)+dot(sub(o[2],i[2]),uY))/2;
-  const L=Math.max(0,left),R=Math.max(0,right),T=Math.max(0,top),B=Math.max(0,bottom);
-  const Lp=L+R>0?L/(L+R)*100:50, Rp=100-Lp;
-  const Tp=T+B>0?T/(T+B)*100:50, Bp=100-Tp;
+  // A margin ≤ 0 means the inner frame sits ON or OUTSIDE the card edge — the points are wrong.
+  // Never clamp: clamping silently turned garbage input into a fake perfect 50/50.
+  const bad=[];
+  if(left<=0)bad.push("left"); if(right<=0)bad.push("right");
+  if(top<=0)bad.push("top"); if(bottom<=0)bad.push("bottom");
+  if(bad.length){
+    state.result=null; state.warp=null;
+    clearResult(); showInvalid(bad);
+    renderOverlay();
+    return;
+  }
+  const L=left,R=right,T=top,B=bottom;
+  const Lp=L/(L+R)*100, Rp=100-Lp;
+  const Tp=T/(T+B)*100, Bp=100-Tp;
   const axisLR=Math.max(Lp,Rp), axisTB=Math.max(Tp,Bp);   // worst side of each axis (≥50)
   const worstAxis=Math.max(axisLR,axisTB);                 // the less-centered axis drives the grade
   const bestAxis =Math.min(axisLR,axisTB);
@@ -1052,8 +1063,27 @@ function clearResult(){
   $("scoreSec").style.display="none";$("slabSec").style.display="none";$("dlSec").style.display="none";
   $("worthSec").style.display="none";
 }
+let _emptyDefaultHTML=null;
+function showInvalid(bad){
+  const el=$("resultEmpty");
+  if(_emptyDefaultHTML===null)_emptyDefaultHTML=el.innerHTML;
+  el.style.display="block";
+  el.innerHTML=`<div class="big">⚠️</div><b style="color:var(--red)">Invalid points — no grade possible</b><br><br>`+
+    `The inner frame must sit <b>inside</b> the card edge on every side. `+
+    `Overlapping/crossed on: <b style="color:var(--red)">${bad.join(", ")}</b>.<br><br>`+
+    `Check the click order (TL → TR → BR → BL) and that outer points are on the card edge, inner points on the printed frame. Drag points to fix — this updates live.`;
+  const txt=$("bannerTxt"),dot=$("bannerDot");
+  if(txt){dot.className="dot";dot.style.background="var(--red)";
+    txt.innerHTML=`<b style="color:var(--red)">Invalid points (${bad.join(", ")})</b><small>Inner frame must be inside the card edge — drag points to fix.</small>`;}
+}
 function renderResult(){
   const r=state.result; if(!r)return;
+  if(_emptyDefaultHTML!==null){$("resultEmpty").innerHTML=_emptyDefaultHTML;}
+  const bd=$("bannerDot"); if(bd)bd.style.background="";
+  if(currentSet()==="done"){
+    $("bannerDot").className="dot green";
+    $("bannerTxt").innerHTML=`<b>All 8 points placed ✓</b><small>Drag any point to fine-tune. Results update live.</small>`;
+  }
   $("resultEmpty").style.display="none";$("resultBody").style.display="block";
   $("scoreSec").style.display="block";$("slabSec").style.display="block";$("dlSec").style.display="block";
   $("worthSec").style.display="block";
