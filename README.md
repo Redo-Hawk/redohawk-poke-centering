@@ -2,7 +2,7 @@
 
 Free, open-source, single-file web app to measure trading card **centering** from a photo — the same metric PSA, BGS, CGC and PCA use for grading.
 
-**[→ Try it live](https://kaleldoon.github.io/kaleldoon-poke-centering/)** — no install, no account, no server. Everything runs in your browser; your photos never leave your device.
+**[→ Try it live](https://redo-hawk.github.io/redohawk-poke-centering/)** — no install, no account, no server. Everything runs in your browser; your photos never leave your device.
 
 ![status](https://img.shields.io/badge/status-active-brightgreen) ![license](https://img.shields.io/badge/license-MIT-blue)
 
@@ -31,7 +31,7 @@ Ideas that would help:
 - Auto-detect card corners (edge detection) to reduce manual clicking
 - More grading companies / updated tolerance tables if you have sourced data
 - Better rounded-corner guide UX
-- Localization (FR/EN toggle)
+- Localization / i18n support
 - Mobile touch refinements
 
 To contribute: fork, edit `index.html` directly (it's the whole app), open a PR describing what changed and why. Keep it dependency-free if possible — that's the whole point of a single portable file.
