@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Centering — Pokémon Grading Tool</title>
+<style>
+  :root{
+    --bg:#0b0f14;
+    --panel:#121821;
+    --panel2:#0e141c;
+    --line:#1e2a38;
+    --line2:#27384a;
+    --txt:#e6edf3;
+    --muted:#8aa0b4;
+    --faint:#5d7286;
+    --cyan:#22d3ee;
+    --cyan-dim:#0e7490;
+    --amber:#fbbf24;
+    --amber-dim:#b45309;
+    --green:#34d399;
+    --red:#f87171;
+    --accent:#22d3ee;
+    --shadow:0 10px 40px rgba(0,0,0,.55);
+    --radius:14px;
+    font-synthesis:none;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(1200px 800px at 80% -10%, #16202c 0%, var(--bg) 55%);
+    color:var(--txt);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{display:flex;flex-direction:column;height:100vh}
+
+  /* Header */
+  header{
+    display:flex;align-items:center;gap:18px;
+    padding:12px 20px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(18,24,33,.9),rgba(11,15,20,.6));
+    backdrop-filter:blur(8px);z-index:30;
+  }
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:.3px}
+  .brand .logo{
+    width:30px;height:30px;border-radius:8px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--cyan),#3b82f6);color:#04121a;font-weight:900;
+    box-shadow:0 4px 14px rgba(34,211,238,.35);
+  }
+  .brand small{display:block;font-weight:500;color:var(--muted);font-size:11px;letter-spacing:.5px}
+  .steps{display:flex;gap:8px;margin-left:8px;flex-wrap:wrap}
+  .pill{
+    display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--faint);
+    padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel2);
+    transition:.2s;white-space:nowrap;
+  }
+  .pill .n{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;
+    background:#1c2735;color:var(--muted);font-weight:700}
+  .pill.active{color:var(--txt);border-color:var(--cyan);box-shadow:0 0 0 1px rgba(34,211,238,.25) inset}
+  .pill.active .n{background:var(--cyan);color:#04121a}
+  .pill.done{color:var(--green);border-color:rgba(52,211,153,.4)}
+  .pill.done .n{background:var(--green);color:#04121a}
+  header .spacer{flex:1}
+  .ghost-btn{
+    background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    padding:8px 14px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s;
+  }
+  .ghost-btn:hover{border-color:var(--line2);color:var(--txt);background:#16202c}
+
+  /* Layout */
+  .main{flex:1;display:flex;min-height:0}
+  .stagewrap{flex:1;position:relative;min-width:0;background:
+     linear-gradient(0deg,rgba(0,0,0,.25),rgba(0,0,0,0)),
+     repeating-conic-gradient(#0c1219 0% 25%, #0a0f15 0% 50%) 50%/26px 26px;}
+  #stage{position:absolute;inset:0;overflow:hidden;cursor:grab;touch-action:none}
+  #stage.placing{cursor:crosshair}
+  #stage.panning{cursor:grabbing}
+  #scene{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+  #scene img{display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+  #overlay{position:absolute;left:0;top:0;overflow:visible}
+
+  /* Toolbar */
+  .toolbar{
+    position:absolute;left:14px;top:14px;display:flex;gap:6px;z-index:20;
+    background:rgba(14,20,28,.85);border:1px solid var(--line);border-radius:11px;padding:6px;
+    backdrop-filter:blur(6px);box-shadow:var(--shadow);
+  }
+  .toolbar button{
+    width:36px;height:36px;border-radius:8px;border:1px solid transparent;background:transparent;
+    color:var(--muted);cursor:pointer;font-size:16px;display:grid;place-items:center;transition:.15s;
+  }
+  .toolbar button:hover{background:#1a2533;color:var(--txt)}
+  .toolbar .sep{width:1px;background:var(--line);margin:4px 2px}
+  .toolbar button.warn:hover{color:var(--red)}
+
+  .zoomlevel{
+    position:absolute;left:14px;bottom:14px;z-index:20;font-size:12px;color:var(--muted);
+    background:rgba(14,20,28,.85);border:1px solid var(--line);border-radius:8px;padding:5px 10px;
+  }
+
+  /* Instruction banner */
+  .banner{
+    position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:20;
+    display:flex;align-items:center;gap:14px;max-width:min(680px,90%);
+    background:rgba(14,20,28,.92);border:1px solid var(--line2);border-radius:13px;
+    padding:13px 18px;box-shadow:var(--shadow);backdrop-filter:blur(6px);
+  }
+  .banner .dot{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 0 4px rgba(255,255,255,.06)}
+  .banner .dot.cyan{background:var(--cyan)} .banner .dot.amber{background:var(--amber)}
+  .banner .dot.green{background:var(--green)}
+  .banner .txt{font-size:14px;line-height:1.35}
+  .banner .txt b{color:#fff}
+  .banner .txt small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .banner .next{margin-left:auto}
+  .btn{
+    background:linear-gradient(135deg,var(--cyan),#3b82f6);color:#04121a;border:none;
+    padding:9px 16px;border-radius:9px;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;
+    box-shadow:0 4px 16px rgba(34,211,238,.3);transition:.15s;
+  }
+  .btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn.amber{background:linear-gradient(135deg,var(--amber),#f59e0b);box-shadow:0 4px 16px rgba(251,191,36,.3)}
+
+  /* Dropzone */
+  .dropzone{
+    position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:18px;text-align:center;padding:30px;
+  }
+  .dropzone.hidden{display:none}
+  .dz-card{
+    width:min(520px,90%);padding:48px 40px;border:2px dashed var(--line2);border-radius:20px;
+    background:rgba(14,20,28,.6);transition:.2s;display:flex;flex-direction:column;align-items:center;gap:16px;
+  }
+  .dropzone.drag .dz-card{border-color:var(--cyan);background:rgba(34,211,238,.07);transform:scale(1.01)}
+  .dz-ic{width:70px;height:70px;border-radius:18px;display:grid;place-items:center;font-size:34px;
+    background:linear-gradient(135deg,#16222f,#0e1620);border:1px solid var(--line2);color:var(--cyan)}
+  .dz-card h2{font-size:21px;font-weight:700}
+  .dz-card p{color:var(--muted);font-size:14px;max-width:340px;line-height:1.5}
+  .dz-hint{color:var(--faint);font-size:12px}
+
+  /* Sidebar */
+  aside{
+    width:380px;flex:none;border-left:1px solid var(--line);background:var(--panel);
+    display:flex;flex-direction:column;overflow-y:auto;
+  }
+  aside::-webkit-scrollbar{width:10px}
+  aside::-webkit-scrollbar-thumb{background:#1d2937;border-radius:8px;border:2px solid var(--panel)}
+  .sec{padding:18px 20px;border-bottom:1px solid var(--line)}
+  .sec h3{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--faint);margin-bottom:14px;font-weight:700}
+
+  .placeholder{color:var(--faint);font-size:13px;line-height:1.6;text-align:center;padding:24px 8px}
+  .placeholder .big{font-size:30px;opacity:.5;margin-bottom:8px}
+
+  /* Result numbers */
+  .axis{margin-bottom:20px}
+  .axis:last-child{margin-bottom:0}
+  .axis-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .axis-head .lbl{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.5px}
+  .axis-head .val{font-size:13px;font-variant-numeric:tabular-nums}
+  .axis-head .val b{font-size:15px}
+  .bar{position:relative;height:30px;border-radius:8px;overflow:hidden;background:#0c1219;border:1px solid var(--line)}
+  .bar .fillL{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#0e7490,#22d3ee)}
+  .bar .fillR{position:absolute;right:0;top:0;bottom:0;background:linear-gradient(270deg,#7c2d12,#fb923c)}
+  .bar .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.35)}
+  .bar .mid::after{content:"50";position:absolute;top:-1px;left:3px;font-size:9px;color:rgba(255,255,255,.5)}
+  .bar .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.8)}
+  .bar .lt,.bar .rt{position:absolute;top:50%;transform:translateY(-50%);font-size:12px;font-weight:800;
+     color:#04121a;text-shadow:0 1px 1px rgba(255,255,255,.25)}
+  .bar .lt{left:9px}.bar .rt{right:9px}
+
+  /* Score */
+  .grade-controls{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+  .seg{display:flex;gap:4px;background:#0c1219;border:1px solid var(--line);border-radius:10px;padding:4px}
+  .seg button{flex:1;border:none;background:transparent;color:var(--muted);font-size:12.5px;font-weight:700;
+    padding:7px 6px;border-radius:7px;cursor:pointer;transition:.15s;font-family:inherit;white-space:nowrap}
+  .seg button:hover{color:var(--txt)}
+  .seg button.on{background:linear-gradient(135deg,var(--cyan),#3b82f6);color:#04121a;box-shadow:0 2px 10px rgba(34,211,238,.3)}
+  #companyToggle button.on{background:linear-gradient(135deg,#a78bfa,#7c3aed);box-shadow:0 2px 10px rgba(124,58,237,.35)}
+
+  .cmp{margin-top:16px;border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .cmp .crow{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;font-size:13px;border-top:1px solid var(--line)}
+  .cmp .crow:first-child{border-top:none}
+  .cmp .crow.sel{background:rgba(124,58,237,.12)}
+  .cmp .co{display:flex;flex-direction:column}
+  .cmp .co b{font-weight:700;font-size:13px}
+  .cmp .co small{color:var(--faint);font-size:10.5px}
+  .cmp .cg{font-weight:800;font-size:13.5px;padding:3px 10px;border-radius:7px;font-variant-numeric:tabular-nums}
+  .cmp .cg.g10{background:rgba(52,211,153,.16);color:var(--green)}
+  .cmp .cg.g9{background:rgba(34,211,238,.14);color:var(--cyan)}
+  .cmp .cg.g7{background:rgba(251,191,36,.14);color:var(--amber)}
+  .cmp .cg.glow{background:rgba(248,113,113,.14);color:var(--red)}
+  .worst-note{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.55}
+  .worst-note b{color:var(--txt)}
+
+  .score-wrap{display:flex;gap:16px;align-items:center}
+  .shield{
+    width:96px;height:96px;flex:none;border-radius:18px;display:grid;place-items:center;position:relative;
+    background:conic-gradient(from 220deg,#0e7490,#22d3ee,#34d399,#22d3ee,#0e7490);
+    box-shadow:0 8px 30px rgba(34,211,238,.25);
+  }
+  .shield .inner{
+    position:absolute;inset:4px;border-radius:14px;background:#0c1219;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:0;
+  }
+  .shield .num{font-size:38px;font-weight:900;line-height:1;letter-spacing:-1px}
+  .shield .of{font-size:11px;color:var(--muted);margin-top:2px}
+  .score-meta{flex:1}
+  .score-meta .grade{font-size:19px;font-weight:800;letter-spacing:.3px}
+  .score-meta .sub{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+  /* Worth grading */
+  .worth-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .worth-grid label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.3px}
+  .worth-grid label.full{grid-column:1/-1}
+  .worth-grid input,.worth-grid select{
+    background:#0c1219;border:1px solid var(--line2);color:var(--txt);border-radius:8px;
+    padding:8px 10px;font-size:13px;font-family:inherit;outline:none;transition:.15s;width:100%;
+  }
+  .worth-grid input:focus,.worth-grid select:focus{border-color:var(--cyan)}
+  .worth-grid .infield{position:relative}
+  .worth-grid .infield .cur{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--faint);font-size:12px;pointer-events:none}
+  .worth-out{margin-top:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel2)}
+  .worth-verdict{display:flex;align-items:center;gap:12px;padding:14px 16px;font-weight:800;font-size:16px}
+  .worth-verdict .vic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:17px;flex:none}
+  .worth-verdict.good{color:var(--green)} .worth-verdict.good .vic{background:rgba(52,211,153,.15)}
+  .worth-verdict.warn{color:var(--amber)} .worth-verdict.warn .vic{background:rgba(251,191,36,.15)}
+  .worth-verdict.bad{color:var(--red)}    .worth-verdict.bad .vic{background:rgba(248,113,113,.15)}
+  .worth-verdict.neutral{color:var(--muted)} .worth-verdict.neutral .vic{background:#1c2735}
+  .worth-rows{border-top:1px solid var(--line);padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+  .worth-rows .row{display:flex;justify-content:space-between;font-size:13px}
+  .worth-rows .row span{color:var(--muted)}
+  .worth-rows .row b{font-variant-numeric:tabular-nums}
+  .worth-rows .row b.pos{color:var(--green)} .worth-rows .row b.neg{color:var(--red)}
+  .worth-note{font-size:11.5px;color:var(--faint);line-height:1.5;padding:0 16px 12px}
+
+  .slabbox{display:flex;justify-content:center;padding:6px 0}
+  #slabCanvas{max-width:100%;border-radius:10px;box-shadow:var(--shadow)}
+
+  .dlrow{display:flex;gap:10px}
+  .dlrow .btn{flex:1;text-align:center}
+
+  .legend{display:flex;flex-direction:column;gap:9px;font-size:12.5px;color:var(--muted)}
+  .legend .li{display:flex;align-items:center;gap:9px}
+  .legend .sw{width:14px;height:14px;border-radius:4px;flex:none}
+
+  .miniguide{font-size:12.5px;color:var(--muted);line-height:1.6}
+  .miniguide b{color:var(--txt)}
+  input[type=range]{width:100%;accent-color:var(--cyan);height:24px;cursor:pointer;background:transparent}
+  .rngval{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--faint);margin-top:2px}
+  .rngval b{color:var(--cyan);font-size:13px;font-variant-numeric:tabular-nums}
+  .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;background:#0c1219;border:1px solid var(--line2);
+    border-radius:5px;padding:1px 6px;color:var(--muted)}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:#16202c;border:1px solid var(--line2);padding:11px 18px;border-radius:10px;font-size:13px;
+    box-shadow:var(--shadow);z-index:100;transition:.25s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:920px){
+    aside{width:330px}
+    .steps{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo">◎</div>
+      <div>CardCenter<small>Pokémon centering & grade estimator</small></div>
+    </div>
+    <div class="steps" id="steps">
+      <div class="pill" data-step="1"><span class="n">1</span> Import</div>
+      <div class="pill" data-step="2"><span class="n">2</span> Outer corners</div>
+      <div class="pill" data-step="3"><span class="n">3</span> Inner corners</div>
+      <div class="pill" data-step="4"><span class="n">4</span> Result</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="ghost-btn" id="newImgBtn" title="Load another image">↺ New image</button>
+  </header>
+
+  <div class="main">
+    <div class="stagewrap">
+      <div id="stage">
+        <div id="scene">
+          <img id="img" alt="">
+          <svg id="overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+
+      <div class="toolbar" id="toolbar" style="display:none">
+        <button id="zoomOut" title="Zoom out">−</button>
+        <button id="zoomIn" title="Zoom in">＋</button>
+        <button id="fitBtn" title="Fit to screen">⤢</button>
+        <div class="sep"></div>
+        <button id="undoBtn" title="Undo last point">↶</button>
+        <button id="clearBtn" class="warn" title="Clear all points">🗑</button>
+      </div>
+      <div class="zoomlevel" id="zoomLevel" style="display:none">100%</div>
+
+      <div class="banner" id="banner" style="display:none">
+        <div class="dot cyan" id="bannerDot"></div>
+        <div class="txt" id="bannerTxt"><b>Place the corners</b></div>
+        <button class="btn next" id="bannerBtn" style="display:none">Continue →</button>
+      </div>
+
+      <div class="dropzone" id="dropzone">
+        <div class="dz-card" id="dzCard">
+          <div class="dz-ic">⬆</div>
+          <h2>Drop a card photo here</h2>
+          <p>Import a photo of your Pokémon card. Handheld / slightly angled shots are fine — you'll mark the corners by hand.</p>
+          <button class="btn" id="browseBtn">Choose a file</button>
+          <div class="dz-hint">PNG · JPG · WEBP — stays 100% on your device</div>
+        </div>
+      </div>
+    </div>
+
+    <aside>
+      <!-- guide -->
+      <div class="sec" id="guideSec">
+        <h3>How it works</h3>
+        <div class="miniguide">
+          <b>1.</b> Import a card photo.<br>
+          <b>2.</b> Click the <b style="color:var(--cyan)">4 outer corners</b> (card edge), guided order.<br>
+          <b>3.</b> Click the <b style="color:var(--amber)">4 inner corners</b> (printed frame inside the border).<br>
+          <b>4.</b> Read your L/R · T/B centering, grade & slab — then download.<br><br>
+          <span style="color:var(--faint)">Drag any point to adjust. Scroll to zoom, drag the background to pan.</span>
+        </div>
+      </div>
+
+      <!-- rounded corner radius -->
+      <div class="sec" id="radiusSec" style="display:none">
+        <h3>Rounded corner guide</h3>
+        <input type="range" id="cornerR" min="1.5" max="9" step="0.1" value="4.5">
+        <div class="rngval"><span>sharp</span><b id="cornerRVal">4.5%</b><span>round</span></div>
+        <div class="miniguide" style="margin-top:10px">
+          Pokémon cards have <b>rounded corners</b>. Drag each outer corner so the
+          <b style="color:var(--cyan)">cyan arc</b> hugs the real rounded corner and the
+          <b style="color:var(--red)">red dashed edges</b> sit on the card edges.
+        </div>
+      </div>
+
+      <!-- result -->
+      <div class="sec">
+        <h3>Centering</h3>
+        <div id="resultEmpty" class="placeholder">
+          <div class="big">📐</div>
+          Place all 8 points to compute<br>Left/Right &amp; Top/Bottom centering.
+        </div>
+        <div id="resultBody" style="display:none">
+          <div class="axis">
+            <div class="axis-head">
+              <span class="lbl">LEFT / RIGHT</span>
+              <span class="val" id="lrVal"></span>
+            </div>
+            <div class="bar">
+              <div class="fillL" id="lrFillL"></div>
+              <div class="fillR" id="lrFillR"></div>
+              <div class="mid"></div>
+              <div class="mk" id="lrMk"></div>
+              <span class="lt" id="lrLt"></span><span class="rt" id="lrRt"></span>
+            </div>
+          </div>
+          <div class="axis">
+            <div class="axis-head">
+              <span class="lbl">TOP / BOTTOM</span>
+              <span class="val" id="tbVal"></span>
+            </div>
+            <div class="bar">
+              <div class="fillL" id="tbFillL"></div>
+              <div class="fillR" id="tbFillR"></div>
+              <div class="mid"></div>
+              <div class="mk" id="tbMk"></div>
+              <span class="lt" id="tbLt"></span><span class="rt" id="tbRt"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- score -->
+      <div class="sec" id="scoreSec" style="display:none">
+        <h3>Centering grade</h3>
+        <div class="grade-controls">
+          <div class="seg" id="sideToggle">
+            <button data-side="front" class="on">Front (recto)</button>
+            <button data-side="back">Back (verso)</button>
+          </div>
+          <div class="seg" id="companyToggle">
+            <button data-co="PSA" class="on">PSA</button>
+            <button data-co="BGS">BGS</button>
+            <button data-co="CGC">CGC</button>
+            <button data-co="PCA">PCA</button>
+          </div>
+        </div>
+        <div class="score-wrap">
+          <div class="shield">
+            <div class="inner"><div class="num" id="scoreNum">–</div><div class="of" id="scoreOf">/ 10</div></div>
+          </div>
+          <div class="score-meta">
+            <div class="grade" id="gradeLbl">—</div>
+            <div class="sub" id="gradeSub"></div>
+          </div>
+        </div>
+        <div class="cmp" id="cmpTable"></div>
+        <div class="worst-note" id="worstNote"></div>
+      </div>
+
+      <!-- worth grading -->
+      <div class="sec" id="worthSec" style="display:none">
+        <h3>Worth grading?</h3>
+        <div class="worth-grid">
+          <label class="full">Grading service
+            <select id="wService">
+              <option data-fee="22">PSA — Value Bulk (≈22)</option>
+              <option data-fee="25" selected>PSA — Value (≈25)</option>
+              <option data-fee="40">PSA — Regular (≈40)</option>
+              <option data-fee="18">CGC — Bulk/Value (≈18)</option>
+              <option data-fee="25">BGS — Standard (≈25)</option>
+              <option data-fee="0">Custom</option>
+            </select>
+          </label>
+          <label>Fee / card
+            <div class="infield"><input type="number" id="wFee" value="25" min="0" step="1"><span class="cur cur-sym">€</span></div>
+          </label>
+          <label>Shipping (round-trip)
+            <div class="infield"><input type="number" id="wShip" value="15" min="0" step="1"><span class="cur cur-sym">€</span></div>
+          </label>
+          <label>Currency
+            <select id="wCur"><option>€</option><option>$</option><option>£</option></select>
+          </label>
+          <label>Raw value (ungraded)
+            <div class="infield"><input type="number" id="wRaw" value="0" min="0" step="1"><span class="cur cur-sym">€</span></div>
+          </label>
+          <label class="full">Estimated value once graded
+            <div class="infield"><input type="number" id="wGraded" value="0" min="0" step="1"><span class="cur cur-sym">€</span></div>
+          </label>
+        </div>
+        <div class="worth-out">
+          <div class="worth-verdict neutral" id="wVerdict"><div class="vic" id="wVic">…</div><span id="wVerdictTxt">Enter your card's values</span></div>
+          <div class="worth-rows">
+            <div class="row"><span>Predicted grade ceiling</span><b id="wGrade">—</b></div>
+            <div class="row"><span>Total grading cost</span><b id="wCost">—</b></div>
+            <div class="row"><span>Net gain</span><b id="wNet">—</b></div>
+            <div class="row"><span>Return on cost</span><b id="wRoi">—</b></div>
+          </div>
+          <div class="worth-note" id="wNote"></div>
+        </div>
+      </div>
+
+      <!-- slab -->
+      <div class="sec" id="slabSec" style="display:none">
+        <h3>Slab preview</h3>
+        <div class="slabbox"><canvas id="slabCanvas" width="300" height="430"></canvas></div>
+      </div>
+
+      <!-- download -->
+      <div class="sec" id="dlSec" style="display:none">
+        <h3>Export</h3>
+        <div class="dlrow">
+          <button class="btn" id="dlReport">⬇ Download report</button>
+          <button class="btn amber" id="dlSlab">⬇ Slab</button>
+        </div>
+      </div>
+
+      <!-- legend -->
+      <div class="sec">
+        <h3>Legend</h3>
+        <div class="legend">
+          <div class="li"><span class="sw" style="background:var(--cyan)"></span> Outer corners — physical card edge</div>
+          <div class="li"><span class="sw" style="background:var(--amber)"></span> Inner corners — printed graphic frame</div>
+          <div class="li"><span class="sw" style="background:var(--green)"></span> Margins — measured border widths</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+<div class="toast" id="toast"></div>
+
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const SVGNS="http://www.w3.org/2000/svg";
+
+// ---------- State ----------
+const state={
+  img:null, W:0, H:0,
+  s:1, tx:0, ty:0,          // transform: translate(tx,ty) scale(s)
+  outer:[], inner:[],        // image-pixel points {x,y}; order TL,TR,BR,BL
+  drag:null,                 // {set,idx}
+  pan:null,                  // {sx,sy,tx,ty,moved}
+  result:null,
+  warp:null,                 // {canvas, innerDst, outW, outH}
+  cornerR:0.045,             // rounded-corner guide radius as fraction of card edge length
+  side:"front",              // front (recto) | back (verso) — different tolerances
+  company:"PSA",             // PSA | BGS | CGC | PCA
+};
+const OUTER_LABELS=["Top-Left","Top-Right","Bottom-Right","Bottom-Left"];
+const INNER_LABELS=["Top-Left","Top-Right","Bottom-Right","Bottom-Left"];
+const PAN_THRESH=5;
+
+// ---------- DOM ----------
+const stage=$("stage"), scene=$("scene"), img=$("img"), ov=$("overlay");
+const dropzone=$("dropzone"), dzCard=$("dzCard"), fileInput=$("fileInput");
+
+// ---------- Vector helpers ----------
+const sub=(a,b)=>({x:a.x-b.x,y:a.y-b.y});
+const add=(a,b)=>({x:a.x+b.x,y:a.y+b.y});
+const mul=(a,k)=>({x:a.x*k,y:a.y*k});
+const mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+const dot=(a,b)=>a.x*b.x+a.y*b.y;
+const len=a=>Math.hypot(a.x,a.y);
+const norm=a=>{const l=len(a)||1;return{x:a.x/l,y:a.y/l};};
+
+// ---------- Coordinate transforms ----------
+function applyTransform(){
+  scene.style.transform=`translate(${state.tx}px,${state.ty}px) scale(${state.s})`;
+  $("zoomLevel").textContent=Math.round(state.s*100)+"%";
+  renderOverlay(); // markers must rescale with zoom
+}
+function screenToImage(clientX,clientY){
+  const r=stage.getBoundingClientRect();
+  return {x:(clientX-r.left-state.tx)/state.s, y:(clientY-r.top-state.ty)/state.s};
+}
+function fit(){
+  const r=stage.getBoundingClientRect();
+  if(!state.W) return;
+  const pad=70;
+  const s=Math.min((r.width-pad)/state.W,(r.height-pad)/state.H);
+  state.s=s;
+  state.tx=(r.width-state.W*s)/2;
+  state.ty=(r.height-state.H*s)/2;
+  applyTransform();
+}
+function zoomAt(clientX,clientY,factor){
+  const r=stage.getBoundingClientRect();
+  const x=clientX-r.left, y=clientY-r.top;
+  const ix=(x-state.tx)/state.s, iy=(y-state.ty)/state.s;
+  state.s=Math.max(0.05,Math.min(40,state.s*factor));
+  state.tx=x-ix*state.s; state.ty=y-iy*state.s;
+  applyTransform();
+}
+
+// ---------- Image loading ----------
+function loadFile(file){
+  if(!file||!file.type.startsWith("image/")){toast("Please drop an image file");return;}
+  const url=URL.createObjectURL(file);
+  const im=new Image();
+  im.onload=()=>{
+    state.img=im; state.W=im.naturalWidth; state.H=im.naturalHeight;
+    img.src=url; img.width=state.W; img.height=state.H;
+    ov.setAttribute("width",state.W); ov.setAttribute("height",state.H);
+    ov.setAttribute("viewBox",`0 0 ${state.W} ${state.H}`);
+    state.outer=[]; state.inner=[]; state.result=null; state.warp=null;
+    dropzone.classList.add("hidden");
+    $("toolbar").style.display="flex";
+    $("zoomLevel").style.display="block";
+    $("banner").style.display="flex";
+    fit();
+    updateUI();
+  };
+  im.onerror=()=>toast("Could not read that image");
+  im.src=url;
+}
+fileInput.addEventListener("change",e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
+$("browseBtn").onclick=()=>fileInput.click();
+$("newImgBtn").onclick=()=>fileInput.click();
+
+// drag & drop
+["dragenter","dragover"].forEach(ev=>dropzone.addEventListener(ev,e=>{e.preventDefault();dropzone.classList.add("drag");}));
+["dragleave","drop"].forEach(ev=>dropzone.addEventListener(ev,e=>{e.preventDefault();if(ev!=="drop")dropzone.classList.remove("drag");}));
+dropzone.addEventListener("drop",e=>{dropzone.classList.remove("drag");if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+window.addEventListener("dragover",e=>e.preventDefault());
+window.addEventListener("drop",e=>{e.preventDefault();if(!state.img&&e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+
+// ---------- Steps logic ----------
+function currentSet(){
+  if(state.outer.length<4) return "outer";
+  if(state.inner.length<4) return "inner";
+  return "done";
+}
+function updateUI(){
+  const set=currentSet();
+  // step pills
+  const oDone=state.outer.length>=4, iDone=state.inner.length>=4;
+  setPill(1,!!state.img,!!state.img);
+  setPill(2, set==="outer", oDone);
+  setPill(3, set==="inner", iDone);
+  setPill(4, set==="done", set==="done");
+  $("radiusSec").style.display = oDone ? "block" : "none";
+  // banner
+  const b=$("banner"), txt=$("bannerTxt"), dot=$("bannerDot"), btn=$("bannerBtn");
+  stage.classList.toggle("placing", set!=="done");
+  if(set==="outer"){
+    dot.className="dot cyan";
+    txt.innerHTML=`<b>Outer corner ${state.outer.length+1}/4 — ${OUTER_LABELS[state.outer.length]}</b><small>Click the physical edge of the card. Order: TL → TR → BR → BL.</small>`;
+    btn.style.display="none";
+  }else if(set==="inner"){
+    dot.className="dot amber";
+    txt.innerHTML=`<b>Inner corner ${state.inner.length+1}/4 — ${INNER_LABELS[state.inner.length]}</b><small>Click the printed graphic frame inside the border. Same order: TL → TR → BR → BL.</small>`;
+    btn.style.display="none";
+  }else{
+    dot.className="dot green";
+    txt.innerHTML=`<b>All 8 points placed ✓</b><small>Drag any point to fine-tune. Results update live.</small>`;
+    btn.style.display="none";
+  }
+  renderOverlay();
+  if(set==="done") compute(); else clearResult();
+}
+function setPill(n,active,done){
+  const p=document.querySelector(`.pill[data-step="${n}"]`);
+  if(!p)return; p.classList.toggle("active",active&&!done); p.classList.toggle("done",done);
+}
+
+// ---------- Overlay rendering ----------
+function px(v){return v/state.s;} // screen px -> image units
+function renderOverlay(){
+  while(ov.firstChild) ov.removeChild(ov.firstChild);
+  if(!state.img) return;
+  const all=[["outer",state.outer,"var(--cyan)"],["inner",state.inner,"var(--amber)"]];
+
+  // polygons
+  all.forEach(([set,pts,col])=>{
+    if(pts.length<2) return;
+    const complete=pts.length===4;
+    const poly=el("polyline");
+    poly.setAttribute("points",pts.map(p=>`${p.x},${p.y}`).join(" ")+(complete?` ${pts[0].x},${pts[0].y}`:""));
+    poly.setAttribute("fill","none");
+    poly.setAttribute("stroke-linejoin","round");
+    poly.setAttribute("opacity",".9");
+    if(set==="outer"&&complete){
+      // straight card-edge reference, red dashed (align to the card's flat edges)
+      poly.setAttribute("stroke","#f87171");
+      poly.setAttribute("stroke-width",px(2));
+      poly.setAttribute("stroke-dasharray",`${px(7)} ${px(5)}`);
+    }else{
+      poly.setAttribute("stroke",col);
+      poly.setAttribute("stroke-width",px(2));
+    }
+    ov.appendChild(poly);
+  });
+
+  // rounded-corner guides on the outer corners (Pokémon cards have rounded edges)
+  if(state.outer.length===4){ for(let i=0;i<4;i++) drawCornerGuide(i); }
+
+  // margins (only when complete)
+  if(currentSet()==="done"){ drawMargins(); }
+
+  // handles
+  all.forEach(([set,pts,col])=>{
+    pts.forEach((p,i)=>drawHandle(set,i,p,col));
+  });
+}
+function el(tag){return document.createElementNS(SVGNS,tag);}
+function drawCornerGuide(i){
+  // rounded-corner alignment guide for outer corner i.
+  // Draw a quarter arc tangent to both card edges so the user can match the card's rounded corner.
+  const o=state.outer, p=o[i];
+  const dirA=norm(sub(o[(i+1)%4],p));   // toward next corner (one card edge)
+  const dirB=norm(sub(o[(i+3)%4],p));   // toward previous corner (other card edge)
+  const eLen=(len(sub(o[(i+1)%4],p))+len(sub(o[(i+3)%4],p)))/2;
+  const r=Math.max(2,(state.cornerR||0.045)*eLen);
+  const tA=add(p,mul(dirA,r)), tB=add(p,mul(dirB,r));
+  const c=add(p,add(mul(dirA,r),mul(dirB,r)));   // center of the rounding circle (inside the corner)
+  let a0=Math.atan2(tA.y-c.y,tA.x-c.x), a1=Math.atan2(tB.y-c.y,tB.x-c.x);
+  let d=a1-a0; while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI;
+  const N=16, pts=[];
+  for(let k=0;k<=N;k++){const a=a0+d*k/N;pts.push(`${(c.x+r*Math.cos(a)).toFixed(2)},${(c.y+r*Math.sin(a)).toFixed(2)}`);}
+  const arc=el("polyline");
+  arc.setAttribute("points",pts.join(" "));
+  arc.setAttribute("fill","none");
+  arc.setAttribute("stroke","var(--cyan)");
+  arc.setAttribute("stroke-width",px(2.5));
+  arc.setAttribute("stroke-linecap","round");
+  ov.appendChild(arc);
+}
+function drawHandle(set,i,p,col){
+  const r=px(8);
+  const g=el("g"); g.style.cursor="grab";
+  g.dataset.set=set; g.dataset.idx=i;
+  const ring=el("circle");
+  ring.setAttribute("cx",p.x);ring.setAttribute("cy",p.y);ring.setAttribute("r",r);
+  ring.setAttribute("fill","rgba(0,0,0,.35)");ring.setAttribute("stroke",col);ring.setAttribute("stroke-width",px(2.5));
+  const core=el("circle");
+  core.setAttribute("cx",p.x);core.setAttribute("cy",p.y);core.setAttribute("r",px(2.5));
+  core.setAttribute("fill",col);
+  // crosshair
+  const ch=el("path");
+  const cr=px(13);
+  ch.setAttribute("d",`M${p.x-cr},${p.y} H${p.x-r-px(2)} M${p.x+r+px(2)},${p.y} H${p.x+cr} M${p.x},${p.y-cr} V${p.y-r-px(2)} M${p.x},${p.y+r+px(2)} V${p.x*0+p.y+cr}`);
+  ch.setAttribute("stroke",col);ch.setAttribute("stroke-width",px(1));ch.setAttribute("opacity",".55");
+  // label
+  const lbl=el("text");
+  const labels=set==="outer"?OUTER_LABELS:INNER_LABELS;
+  lbl.textContent=(set==="outer"?"O":"I")+(i+1);
+  lbl.setAttribute("x",p.x+r+px(5));lbl.setAttribute("y",p.y-r-px(3));
+  lbl.setAttribute("fill",col);lbl.setAttribute("font-size",px(13));lbl.setAttribute("font-weight","700");
+  lbl.setAttribute("paint-order","stroke");lbl.setAttribute("stroke","rgba(0,0,0,.7)");lbl.setAttribute("stroke-width",px(3));
+  g.append(ch,ring,core,lbl);
+  g.addEventListener("pointerdown",e=>{
+    e.stopPropagation();
+    state.drag={set,idx:i};
+    g.style.cursor="grabbing";
+    g.setPointerCapture(e.pointerId);
+  });
+  ov.appendChild(g);
+}
+function drawMargins(){
+  const o=state.outer,inr=state.inner;
+  const uX=norm(add(sub(o[1],o[0]),sub(o[2],o[3])));
+  const uY=norm(add(sub(o[3],o[0]),sub(o[2],o[1])));
+  // representative segment midpoints for each side
+  const segs=[
+    {a:mid(o[0],o[3]),b:mid(inr[0],inr[3]),label:"L"},  // left
+    {a:mid(inr[1],inr[2]),b:mid(o[1],o[2]),label:"R"},  // right
+    {a:mid(o[0],o[1]),b:mid(inr[0],inr[1]),label:"T"},  // top
+    {a:mid(inr[3],inr[2]),b:mid(o[3],o[2]),label:"B"},  // bottom
+  ];
+  const r=state.result;
+  const vals=r?{L:r.Lp,R:r.Rp,T:r.Tp,B:r.Bp}:null;
+  segs.forEach(s=>{
+    const line=el("line");
+    line.setAttribute("x1",s.a.x);line.setAttribute("y1",s.a.y);
+    line.setAttribute("x2",s.b.x);line.setAttribute("y2",s.b.y);
+    line.setAttribute("stroke","var(--green)");line.setAttribute("stroke-width",px(2));
+    line.setAttribute("stroke-dasharray",`${px(5)} ${px(4)}`);line.setAttribute("opacity",".9");
+    ov.appendChild(line);
+    if(vals){
+      const m=mid(s.a,s.b);
+      const t=el("text");
+      t.textContent=vals[s.label].toFixed(1)+"%";
+      t.setAttribute("x",m.x);t.setAttribute("y",m.y);
+      t.setAttribute("fill","#04121a");t.setAttribute("font-size",px(12));t.setAttribute("font-weight","800");
+      t.setAttribute("text-anchor","middle");t.setAttribute("dominant-baseline","middle");
+      const bg=el("rect");
+      const tw=px(34),th=px(16);
+      bg.setAttribute("x",m.x-tw/2);bg.setAttribute("y",m.y-th/2);bg.setAttribute("width",tw);bg.setAttribute("height",th);
+      bg.setAttribute("rx",px(4));bg.setAttribute("fill","var(--green)");
+      ov.append(bg,t);
+    }
+  });
+}
+
+// ---------- Pointer: pan / place / drag ----------
+stage.addEventListener("pointerdown",e=>{
+  if(!state.img) return;
+  if(e.button!==0 && e.button!==1) return;
+  // background interaction → potential pan or place
+  state.pan={sx:e.clientX,sy:e.clientY,tx:state.tx,ty:state.ty,moved:0,id:e.pointerId};
+  stage.setPointerCapture(e.pointerId);
+});
+window.addEventListener("pointermove",e=>{
+  if(state.drag){
+    const p=screenToImage(e.clientX,e.clientY);
+    p.x=Math.max(0,Math.min(state.W,p.x));p.y=Math.max(0,Math.min(state.H,p.y));
+    (state.drag.set==="outer"?state.outer:state.inner)[state.drag.idx]=p;
+    if(currentSet()==="done") compute(); else renderOverlay();
+    return;
+  }
+  if(state.pan){
+    const dx=e.clientX-state.pan.sx, dy=e.clientY-state.pan.sy;
+    state.pan.moved=Math.max(state.pan.moved,Math.hypot(dx,dy));
+    if(state.pan.moved>PAN_THRESH){
+      stage.classList.add("panning");
+      state.tx=state.pan.tx+dx; state.ty=state.pan.ty+dy;
+      applyTransform();
+    }
+  }
+});
+window.addEventListener("pointerup",e=>{
+  if(state.drag){
+    state.drag=null;
+    document.querySelectorAll("#overlay g").forEach(g=>g.style.cursor="grab");
+    return;
+  }
+  if(state.pan){
+    const wasClick=state.pan.moved<=PAN_THRESH;
+    if(wasClick && currentSet()!=="done"){
+      const p=screenToImage(e.clientX,e.clientY);
+      if(p.x>=0&&p.y>=0&&p.x<=state.W&&p.y<=state.H){
+        if(currentSet()==="outer") state.outer.push(p);
+        else state.inner.push(p);
+        updateUI();
+      }
+    }
+    state.pan=null;
+    stage.classList.remove("panning");
+  }
+});
+stage.addEventListener("wheel",e=>{
+  if(!state.img)return;
+  e.preventDefault();
+  zoomAt(e.clientX,e.clientY, e.deltaY<0?1.12:1/1.12);
+},{passive:false});
+
+// toolbar
+$("zoomIn").onclick=()=>{const r=stage.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.25);};
+$("zoomOut").onclick=()=>{const r=stage.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.25);};
+$("fitBtn").onclick=fit;
+$("undoBtn").onclick=()=>{
+  if(state.inner.length){state.inner.pop();}
+  else if(state.outer.length){state.outer.pop();}
+  else return;
+  state.result=null;state.warp=null;updateUI();
+};
+$("clearBtn").onclick=()=>{
+  if(!state.outer.length&&!state.inner.length)return;
+  state.outer=[];state.inner=[];state.result=null;state.warp=null;updateUI();
+  toast("Points cleared");
+};
+$("cornerR").addEventListener("input",e=>{
+  state.cornerR=(+e.target.value)/100;
+  $("cornerRVal").textContent=(+e.target.value).toFixed(1)+"%";
+  renderOverlay();
+  if(state.result) drawSlab($("slabCanvas"));
+});
+// Worth-grading inputs
+["wFee","wShip","wRaw","wGraded","wCur"].forEach(id=>$(id).addEventListener("input",updateWorth));
+$("wService").addEventListener("change",e=>{
+  const fee=e.target.selectedOptions[0].dataset.fee;
+  if(+fee>0) $("wFee").value=fee;
+  updateWorth();
+});
+// Front/Back + grading company toggles
+$("sideToggle").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return;
+  state.side=b.dataset.side;
+  [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b));
+  if(state.result) applyGrade();
+});
+$("companyToggle").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return;
+  state.company=b.dataset.co;
+  [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b));
+  if(state.result) applyGrade();
+});
+window.addEventListener("resize",()=>{if(state.img)applyTransform();});
+// keyboard
+window.addEventListener("keydown",e=>{
+  if(!state.img)return;
+  if(e.key==="Backspace"||e.key==="z"&&(e.ctrlKey||e.metaKey)){e.preventDefault();$("undoBtn").click();}
+  if(e.key==="+"||e.key==="="){$("zoomIn").click();}
+  if(e.key==="-"){$("zoomOut").click();}
+  if(e.key==="0"){fit();}
+});
+
+// ---------- Centering math ----------
+function compute(){
+  const o=state.outer, i=state.inner;
+  const uX=norm(add(sub(o[1],o[0]),sub(o[2],o[3]))); // left→right
+  const uY=norm(add(sub(o[3],o[0]),sub(o[2],o[1]))); // top→bottom
+  const left  =(dot(sub(i[0],o[0]),uX)+dot(sub(i[3],o[3]),uX))/2;
+  const right =(dot(sub(o[1],i[1]),uX)+dot(sub(o[2],i[2]),uX))/2;
+  const top   =(dot(sub(i[0],o[0]),uY)+dot(sub(i[1],o[1]),uY))/2;
+  const bottom=(dot(sub(o[3],i[3]),uY)+dot(sub(o[2],i[2]),uY))/2;
+  const L=Math.max(0,left),R=Math.max(0,right),T=Math.max(0,top),B=Math.max(0,bottom);
+  const Lp=L+R>0?L/(L+R)*100:50, Rp=100-Lp;
+  const Tp=T+B>0?T/(T+B)*100:50, Bp=100-Tp;
+  const axisLR=Math.max(Lp,Rp), axisTB=Math.max(Tp,Bp);   // worst side of each axis (≥50)
+  const worstAxis=Math.max(axisLR,axisTB);                 // the less-centered axis drives the grade
+  const bestAxis =Math.min(axisLR,axisTB);
+  state.result={Lp,Rp,Tp,Bp,L,R,T,B,axisLR,axisTB,worstAxis,bestAxis};
+  state.warp=makeWarp(500,700);
+  renderResult();
+  renderOverlay();
+}
+
+// Real grading-company centering tolerances. Each ladder: strictest grade first.
+// worst = max allowed % on the WORSE axis (e.g. 55 = 55/45). best = extra cap on the BETTER axis (top tiers only).
+const STANDARDS={
+  PSA:{name:"PSA",sub:"Professional Sports Authenticator",
+    front:[{grade:10,label:"GEM-MT 10",worst:60},{grade:9,label:"MINT 9",worst:65},{grade:8,label:"NM-MT 8",worst:70},
+           {grade:7,label:"NM 7",worst:75},{grade:6,label:"EX-MT 6",worst:80},{grade:5,label:"EX 5",worst:85},
+           {grade:4,label:"VG-EX 4",worst:90},{grade:3,label:"VG 3",worst:95},{grade:2,label:"GOOD 2",worst:101}],
+    back:[{grade:10,label:"GEM-MT 10",worst:75},{grade:9,label:"MINT 9",worst:90},{grade:8,label:"NM-MT 8",worst:95},
+          {grade:7,label:"NM 7",worst:101}]},
+  BGS:{name:"BGS",sub:"Beckett — strictest on centering",
+    front:[{grade:10,label:"PRISTINE 10",worst:51,best:51},{grade:9.5,label:"GEM-MT 9.5",worst:55,best:51},
+           {grade:9,label:"MINT 9",worst:55},{grade:8.5,label:"NM-MT+ 8.5",worst:60},{grade:8,label:"NM-MT 8",worst:65},
+           {grade:7,label:"NM 7",worst:72},{grade:6,label:"EX-MT 6",worst:80},{grade:5,label:"EX 5",worst:90},
+           {grade:4,label:"VG-EX 4",worst:101}],
+    back:[{grade:10,label:"PRISTINE 10",worst:60},{grade:9.5,label:"GEM-MT 9.5",worst:60},{grade:9,label:"MINT 9",worst:70},
+          {grade:8.5,label:"NM-MT+ 8.5",worst:80},{grade:8,label:"NM-MT 8",worst:90},{grade:7,label:"NM 7",worst:101}]},
+  CGC:{name:"CGC",sub:"Certified Guaranty Company",
+    front:[{grade:"P10",label:"PRISTINE 10",worst:51,best:51},{grade:10,label:"GEM-MT 10",worst:55},
+           {grade:9,label:"MINT 9",worst:60},{grade:8,label:"NM-MT 8",worst:65},{grade:7,label:"NM 7",worst:72},
+           {grade:6,label:"EX-MT 6",worst:80},{grade:5,label:"EX 5",worst:90},{grade:4,label:"VG-EX 4",worst:101}],
+    back:[{grade:"P10",label:"PRISTINE 10",worst:51,best:51},{grade:10,label:"GEM-MT 10",worst:75},
+          {grade:9,label:"MINT 9",worst:90},{grade:8,label:"NM-MT 8",worst:95},{grade:7,label:"NM 7",worst:101}]},
+  PCA:{name:"PCA",sub:"Professional Cards Assessment (FR)",
+    front:[{grade:"10+",label:"PERFECT 10+",worst:51},{grade:10,label:"GEM-MT 10",worst:54},{grade:9.5,label:"MINT+ 9.5",worst:58},
+           {grade:9,label:"MINT 9",worst:62},{grade:8,label:"NM-MT 8",worst:68},{grade:7,label:"EX-MT 7",worst:76},
+           {grade:6,label:"EX 6",worst:84},{grade:5,label:"VG 5",worst:101}],
+    back:[{grade:"10+",label:"PERFECT 10+",worst:55},{grade:10,label:"GEM-MT 10",worst:70},{grade:9.5,label:"MINT+ 9.5",worst:80},
+          {grade:9,label:"MINT 9",worst:90},{grade:8,label:"NM-MT 8",worst:101}]},
+};
+function gradeFor(coKey,side,bestAxis,worstAxis){
+  const ladder=STANDARDS[coKey][side];
+  for(const e of ladder){ if(worstAxis<=e.worst && (e.best==null||bestAxis<=e.best)) return e; }
+  return ladder[ladder.length-1];
+}
+function gradeNum(g){ return g==="10+"||g==="P10" ? 10 : (typeof g==="number"?g:parseFloat(g)||0); }
+function gradeTok(g){ return (typeof g==="string")?g:(Number.isInteger(g)?String(g):g.toFixed(1)); }
+function gradeClass(g){ const n=gradeNum(g); return n>=10?"g10":n>=9?"g9":n>=7?"g7":"glow"; }
+
+// ---------- Result UI ----------
+function clearResult(){
+  $("resultEmpty").style.display="block";$("resultBody").style.display="none";
+  $("scoreSec").style.display="none";$("slabSec").style.display="none";$("dlSec").style.display="none";
+  $("worthSec").style.display="none";
+}
+function renderResult(){
+  const r=state.result; if(!r)return;
+  $("resultEmpty").style.display="none";$("resultBody").style.display="block";
+  $("scoreSec").style.display="block";$("slabSec").style.display="block";$("dlSec").style.display="block";
+  $("worthSec").style.display="block";
+
+  $("lrVal").innerHTML=`<b>${r.Lp.toFixed(1)}</b> L &nbsp;·&nbsp; R <b>${r.Rp.toFixed(1)}</b>`;
+  $("tbVal").innerHTML=`<b>${r.Tp.toFixed(1)}</b> T &nbsp;·&nbsp; B <b>${r.Bp.toFixed(1)}</b>`;
+  setBar("lr",r.Lp,r.Rp,"L","R");
+  setBar("tb",r.Tp,r.Bp,"T","B");
+
+  applyGrade();
+  drawSlab($("slabCanvas"));
+}
+function applyGrade(){
+  const r=state.result; if(!r)return;
+  const side=state.side, co=state.company;
+  const e=gradeFor(co,side,r.bestAxis,r.worstAxis);
+  // headline shield = selected company
+  const gtxt = (e.grade==="10+"||e.grade==="P10") ? (e.grade==="P10"?"P10":"10+")
+             : (Number.isInteger(e.grade)?e.grade:e.grade.toFixed ? (Number.isInteger(e.grade)?e.grade:String(e.grade)) : e.grade);
+  $("scoreNum").textContent=gtxt;
+  $("scoreNum").style.fontSize = String(gtxt).length>=3 ? "26px" : "38px";
+  $("scoreOf").textContent = STANDARDS[co].name+" "+(side==="front"?"recto":"verso");
+  $("gradeLbl").textContent=e.label;
+  const lr=`${Math.max(r.Lp,r.Rp).toFixed(0)}/${Math.min(r.Lp,r.Rp).toFixed(0)}`;
+  const tb=`${Math.max(r.Tp,r.Bp).toFixed(0)}/${Math.min(r.Tp,r.Bp).toFixed(0)}`;
+  $("gradeSub").innerHTML=`L/R <b>${lr}</b> · T/B <b>${tb}</b><br>Worst axis ${r.worstAxis.toFixed(1)}/${(100-r.worstAxis).toFixed(1)} — drives the centering grade.`;
+
+  // comparison table across all companies for the selected side
+  const cmp=$("cmpTable"); cmp.innerHTML="";
+  ["PSA","BGS","CGC","PCA"].forEach(k=>{
+    const g=gradeFor(k,side,r.bestAxis,r.worstAxis);
+    const row=document.createElement("div");
+    row.className="crow"+(k===co?" sel":"");
+    row.innerHTML=`<div class="co"><b>${STANDARDS[k].name}</b><small>${STANDARDS[k].sub}</small></div>`+
+                  `<div class="cg ${gradeClass(g.grade)}">${g.label}</div>`;
+    cmp.appendChild(row);
+  });
+  // honest note about why grades differ + ceiling
+  const topBlocked = r.worstAxis>55;
+  $("worstNote").innerHTML =
+    `Centering only — final grade also needs clean corners, edges & surface.<br>`+
+    (topBlocked
+      ? `At <b>${r.worstAxis.toFixed(1)}/${(100-r.worstAxis).toFixed(1)}</b> the strict houses (BGS/CGC/PCA) cap below their top grade; PSA is the most lenient.`
+      : `Tight centering — eligible for top grades if the rest of the card is clean.`);
+
+  // feed numeric grade to the worth calculator
+  state.result.gradeNum=gradeNum(e.grade);
+  state.result.gradeLabel=e.label;
+  state.result.companyLabel=STANDARDS[co].name+" "+(side==="front"?"recto":"verso");
+  state.result.score=gradeNum(e.grade); // back-compat (slab/report header)
+  state.result.grade=e.label;
+  state.result.gradeToken=gtxt;
+  updateWorth();
+}
+function gradeCeil(g){ return Math.floor(g); } // centering caps the achievable grade
+function updateWorth(){
+  const r=state.result;
+  const cur=$("wCur").value;
+  document.querySelectorAll(".cur-sym").forEach(e=>e.textContent=cur);
+  const fee=+$("wFee").value||0, ship=+$("wShip").value||0, raw=+$("wRaw").value||0, graded=+$("wGraded").value||0;
+  const cost=fee+ship;
+  const net=graded-raw-cost;
+  const invested=raw+cost;
+  const roi=invested>0?net/invested*100:0;
+  const money=v=>`${cur}${v.toLocaleString(undefined,{maximumFractionDigits:0})}`;
+  const co=r?(STANDARDS[state.company].name):null;
+  $("wGrade").textContent=r?(co+" "+r.gradeLabel):"—";
+  $("wCost").textContent=money(cost);
+  const netEl=$("wNet");netEl.textContent=(net>=0?"+":"−")+money(Math.abs(net));
+  netEl.className=net>=0?"pos":"neg";
+  $("wRoi").textContent=graded>0?roi.toFixed(0)+"%":"—";
+
+  const v=$("wVerdict"),vt=$("wVerdictTxt"),vic=$("wVic");
+  let cls,txt,icon;
+  if(graded<=0){cls="neutral";txt="Enter your card's values";icon="…";}
+  else if(net<0){cls="bad";txt="Not worth grading";icon="✕";}
+  else if(net<cost){cls="warn";txt="Marginal — thin profit";icon="≈";}
+  else{cls="good";txt="Worth grading";icon="✓";}
+  v.className="worth-verdict "+cls; vt.textContent=txt; vic.textContent=icon;
+
+  // caution: centering ceiling limits achievable grade
+  let note="";
+  if(r){
+    const g=r.gradeLabel;
+    if(r.gradeNum<8) note=`On centering, ${co} caps this around ${g}. A high-value grade (9–10) is unlikely, so be conservative on the graded value.`;
+    else if(r.gradeNum<10) note=`Centering supports ${co} ${g}. Final grade still depends on corners, edges & surface.`;
+    else note=`Centering is top-grade level for ${co} — but corners, edges & surface must also be clean to actually hit it.`;
+  }
+  $("wNote").textContent=note;
+  state.worth={cur,fee,ship,raw,graded,cost,net,roi,verdict:txt,cls};
+}
+function setBar(pfx,lp,rp,lc,rc){
+  $(pfx+"FillL").style.width=lp+"%";
+  $(pfx+"FillR").style.width=rp+"%";
+  $(pfx+"Mk").style.left=lp+"%";
+  $(pfx+"Lt").textContent=lc+" "+lp.toFixed(1);
+  $(pfx+"Rt").textContent=rp.toFixed(1)+" "+rc;
+}
+
+// ---------- Homography & warp ----------
+function solve(A,b){ // Gaussian elimination, n×n
+  const n=b.length;
+  const M=A.map((row,i)=>row.concat(b[i]));
+  for(let c=0;c<n;c++){
+    let piv=c; for(let r=c+1;r<n;r++) if(Math.abs(M[r][c])>Math.abs(M[piv][c])) piv=r;
+    [M[c],M[piv]]=[M[piv],M[c]];
+    const d=M[c][c]||1e-9;
+    for(let j=c;j<=n;j++) M[c][j]/=d;
+    for(let r=0;r<n;r++){ if(r===c)continue; const f=M[r][c]; for(let j=c;j<=n;j++) M[r][j]-=f*M[c][j]; }
+  }
+  return M.map(r=>r[n]);
+}
+function homography(src,dst){ // maps src→dst, returns 9 (h33=1)
+  const A=[],b=[];
+  for(let i=0;i<4;i++){
+    const {x:X,y:Y}=src[i], {x:u,y:v}=dst[i];
+    A.push([X,Y,1,0,0,0,-u*X,-u*Y]); b.push(u);
+    A.push([0,0,0,X,Y,1,-v*X,-v*Y]); b.push(v);
+  }
+  const h=solve(A,b);
+  return [h[0],h[1],h[2],h[3],h[4],h[5],h[6],h[7],1];
+}
+function applyH(H,x,y){
+  const d=H[6]*x+H[7]*y+H[8];
+  return {x:(H[0]*x+H[1]*y+H[2])/d, y:(H[3]*x+H[4]*y+H[5])/d};
+}
+function affineTri(s,d){
+  const x0=s[0].x,y0=s[0].y,x1=s[1].x,y1=s[1].y,x2=s[2].x,y2=s[2].y;
+  const den=(x1-x0)*(y2-y0)-(x2-x0)*(y1-y0)||1e-9;
+  const a=((d[1].x-d[0].x)*(y2-y0)-(d[2].x-d[0].x)*(y1-y0))/den;
+  const c=((d[2].x-d[0].x)*(x1-x0)-(d[1].x-d[0].x)*(x2-x0))/den;
+  const e=d[0].x-a*x0-c*y0;
+  const b=((d[1].y-d[0].y)*(y2-y0)-(d[2].y-d[0].y)*(y1-y0))/den;
+  const dd=((d[2].y-d[0].y)*(x1-x0)-(d[1].y-d[0].y)*(x2-x0))/den;
+  const f=d[0].y-b*x0-dd*y0;
+  return [a,b,c,dd,e,f];
+}
+function makeWarp(outW,outH){
+  const o=state.outer;
+  const rect=[{x:0,y:0},{x:outW,y:0},{x:outW,y:outH},{x:0,y:outH}];
+  const Hd2s=homography(rect,o);        // output rect → source quad
+  const Hs2d=homography(o,rect);         // source quad → output rect (for inner pts)
+  const cv=document.createElement("canvas"); cv.width=outW; cv.height=outH;
+  const ctx=cv.getContext("2d");
+  const GX=26,GY=36;
+  for(let gy=0;gy<GY;gy++){
+    for(let gx=0;gx<GX;gx++){
+      const dx0=gx/GX*outW,dx1=(gx+1)/GX*outW,dy0=gy/GY*outH,dy1=(gy+1)/GY*outH;
+      const dA={x:dx0,y:dy0},dB={x:dx1,y:dy0},dC={x:dx1,y:dy1},dD={x:dx0,y:dy1};
+      const sA=applyH(Hd2s,dA.x,dA.y),sB=applyH(Hd2s,dB.x,dB.y),sC=applyH(Hd2s,dC.x,dC.y),sD=applyH(Hd2s,dD.x,dD.y);
+      drawTri(ctx,[sA,sB,sC],[dA,dB,dC]);
+      drawTri(ctx,[sA,sC,sD],[dA,dC,dD]);
+    }
+  }
+  const innerDst=state.inner.map(p=>applyH(Hs2d,p.x,p.y));
+  return {canvas:cv,innerDst,outW,outH};
+}
+function drawTri(ctx,s,d){
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(d[0].x,d[0].y);ctx.lineTo(d[1].x,d[1].y);ctx.lineTo(d[2].x,d[2].y);ctx.closePath();
+  ctx.clip();
+  const m=affineTri(s,d);
+  ctx.setTransform(m[0],m[1],m[2],m[3],m[4],m[5]);
+  ctx.drawImage(state.img,0,0);
+  ctx.restore();
+  ctx.setTransform(1,0,0,1,0,0);
+}
+
+// ---------- Slab drawing ----------
+function drawSlab(canvas,scaleUp){
+  const r=state.result, w=state.warp; if(!r||!w)return;
+  const DPR=scaleUp||(window.devicePixelRatio>1?2:1.6);
+  // logical size
+  const LW=300,LH=430;
+  canvas.style.width=LW+"px"; canvas.style.height=LH+"px";
+  canvas.width=LW*DPR; canvas.height=LH*DPR;
+  const ctx=canvas.getContext("2d");
+  ctx.scale(DPR,DPR);
+  renderSlabInto(ctx,0,0,LW,LH);
+}
+function roundRect(ctx,x,y,w,h,rad){
+  ctx.beginPath();
+  ctx.moveTo(x+rad,y);ctx.arcTo(x+w,y,x+w,y+h,rad);ctx.arcTo(x+w,y+h,x,y+h,rad);
+  ctx.arcTo(x,y+h,x,y,rad);ctx.arcTo(x,y,x+w,y,rad);ctx.closePath();
+}
+function renderSlabInto(ctx,X,Y,W,H){
+  const r=state.result, warp=state.warp;
+  // slab shell
+  ctx.save();
+  const grad=ctx.createLinearGradient(X,Y,X,Y+H);
+  grad.addColorStop(0,"#eef2f6");grad.addColorStop(1,"#cfd8e3");
+  roundRect(ctx,X,Y,W,H,16);
+  ctx.fillStyle=grad;ctx.fill();
+  ctx.lineWidth=1;ctx.strokeStyle="rgba(255,255,255,.7)";ctx.stroke();
+  // inner shadow frame
+  roundRect(ctx,X+8,Y+8,W-16,H-16,12);
+  ctx.fillStyle="#0c1219";ctx.fill();
+
+  // label header
+  const lx=X+16,ly=Y+16,lw=W-32,lh=58;
+  roundRect(ctx,lx,ly,lw,lh,9);
+  const lg=ctx.createLinearGradient(lx,ly,lx,ly+lh);
+  lg.addColorStop(0,"#11161d");lg.addColorStop(1,"#0a0e13");
+  ctx.fillStyle=lg;ctx.fill();
+  ctx.strokeStyle="rgba(34,211,238,.25)";ctx.lineWidth=1;ctx.stroke();
+  // grade big (selected grading company)
+  ctx.fillStyle="#22d3ee";ctx.textBaseline="middle";
+  ctx.font="800 30px 'Segoe UI',sans-serif";ctx.textAlign="left";
+  const tok=r.gradeToken||String(r.score);
+  ctx.fillText(tok,lx+14,ly+lh/2);
+  const ox=lx+14+ctx.measureText(tok).width+10;
+  ctx.font="700 12px 'Segoe UI',sans-serif";ctx.fillStyle="#e6edf3";
+  ctx.fillText((r.companyLabel||"PSA").toUpperCase(),ox,ly+lh/2-8);
+  ctx.font="500 10px 'Segoe UI',sans-serif";ctx.fillStyle="#8aa0b4";
+  ctx.fillText("CENTERING — "+(r.gradeLabel||""),ox,ly+lh/2+9);
+  // centering numbers right
+  ctx.textAlign="right";
+  ctx.font="700 11px ui-monospace,monospace";ctx.fillStyle="#22d3ee";
+  ctx.fillText(`${r.Lp.toFixed(0)}/${r.Rp.toFixed(0)}  L·R`,lx+lw-12,ly+lh/2-8);
+  ctx.fillStyle="#fbbf24";
+  ctx.fillText(`${r.Tp.toFixed(0)}/${r.Bp.toFixed(0)}  T·B`,lx+lw-12,ly+lh/2+9);
+
+  // card window
+  const cwx=lx, cwy=ly+lh+12, cww=lw, cwh=(Y+H-16)-cwy-6;
+  // fit warped card (ratio outW/outH) into window
+  const ar=warp.outW/warp.outH;
+  let dw=cww,dh=dw/ar;
+  if(dh>cwh){dh=cwh;dw=dh*ar;}
+  const dx=cwx+(cww-dw)/2, dy=cwy+(cwh-dh)/2;
+  // card bg — corners rounded to match the card's rounded edges
+  const rad=Math.max(3,(state.cornerR||0.045)*dw);
+  roundRect(ctx,dx-2,dy-2,dw+4,dh+4,rad+1);ctx.fillStyle="#000";ctx.fill();
+  ctx.save();
+  roundRect(ctx,dx,dy,dw,dh,rad);ctx.clip();
+  ctx.drawImage(warp.canvas,dx,dy,dw,dh);
+  ctx.restore();
+  // overlay: inner frame + margins
+  const sx=dw/warp.outW, sy=dh/warp.outH;
+  const ip=warp.innerDst.map(p=>({x:dx+p.x*sx,y:dy+p.y*sy}));
+  // outer = window rect
+  ctx.lineWidth=1.4;ctx.strokeStyle="rgba(34,211,238,.95)";
+  roundRect(ctx,dx,dy,dw,dh,rad);ctx.stroke();
+  ctx.strokeStyle="rgba(251,191,36,.95)";
+  ctx.beginPath();ctx.moveTo(ip[0].x,ip[0].y);
+  for(let k=1;k<4;k++)ctx.lineTo(ip[k].x,ip[k].y);
+  ctx.closePath();ctx.stroke();
+  ctx.restore();
+}
+
+// ---------- Full report ----------
+function drawReport(){
+  const r=state.result; if(!r)return null;
+  const W=1080,H=1500,P=70;
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;
+  const ctx=cv.getContext("2d");
+  // bg
+  const bg=ctx.createRadialGradient(W*0.8,-100,100,W*0.8,-100,1400);
+  bg.addColorStop(0,"#16202c");bg.addColorStop(1,"#0b0f14");
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // header
+  ctx.fillStyle="#22d3ee";ctx.font="900 22px 'Segoe UI',sans-serif";ctx.textBaseline="alphabetic";
+  ctx.fillText("◎ CARDCENTER",P,P+10);
+  ctx.fillStyle="#e6edf3";ctx.font="800 46px 'Segoe UI',sans-serif";
+  ctx.fillText("Centering Report",P,P+66);
+  ctx.fillStyle="#8aa0b4";ctx.font="500 17px 'Segoe UI',sans-serif";
+  ctx.fillText("Manual 8-point centering · "+(state.side==="front"?"FRONT / recto":"BACK / verso")+" · PSA · BGS · CGC · PCA tolerances",P,P+96);
+
+  // slab on left
+  const slabW=380,slabH=545,slabX=P,slabY=P+150;
+  renderSlabInto(ctx,slabX,slabY,slabW,slabH);
+
+  // right column
+  const rx=slabX+slabW+60, rw=W-rx-P;
+  let ry=slabY+6;
+
+  // score shield
+  ctx.save();
+  const shS=150, shX=rx, shY=ry;
+  const sg=ctx.createConicGradient?ctx.createConicGradient(3.8,shX+shS/2,shY+shS/2):null;
+  roundRect(ctx,shX,shY,shS,shS,26);
+  if(sg){sg.addColorStop(0,"#0e7490");sg.addColorStop(.3,"#22d3ee");sg.addColorStop(.6,"#34d399");sg.addColorStop(1,"#0e7490");ctx.fillStyle=sg;}
+  else ctx.fillStyle="#22d3ee";
+  ctx.fill();
+  roundRect(ctx,shX+6,shY+6,shS-12,shS-12,20);ctx.fillStyle="#0c1219";ctx.fill();
+  ctx.fillStyle="#e6edf3";ctx.textAlign="center";
+  const tok=r.gradeToken||String(r.score);
+  ctx.font=(String(tok).length>=3?"900 42px":"900 62px")+" 'Segoe UI',sans-serif";
+  ctx.fillText(tok,shX+shS/2,shY+shS/2+(String(tok).length>=3?8:12));
+  ctx.fillStyle="#8aa0b4";ctx.font="600 14px 'Segoe UI',sans-serif";
+  ctx.fillText((r.companyLabel||"PSA").toUpperCase(),shX+shS/2,shY+shS/2+44);
+  ctx.restore();
+  // grade text + cross-company comparison
+  ctx.textAlign="left";ctx.fillStyle="#e6edf3";ctx.font="800 32px 'Segoe UI',sans-serif";
+  ctx.fillText(r.grade,rx+shS+28,shY+50);
+  ctx.fillStyle="#8aa0b4";ctx.font="600 15px 'Segoe UI',sans-serif";
+  const side=state.side;
+  const cmp=["PSA","BGS","CGC","PCA"].map(k=>STANDARDS[k].name+" "+gradeTok(gradeFor(k,side,r.bestAxis,r.worstAxis).grade));
+  ctx.fillText(cmp.join("    "),rx+shS+28,shY+82);
+  ctx.fillStyle="#5d7286";ctx.font="500 14px 'Segoe UI',sans-serif";
+  ctx.fillText(`Worst axis ${r.worstAxis.toFixed(1)}/${(100-r.worstAxis).toFixed(1)} · centering only — corners, edges & surface not graded.`,rx+shS+28,shY+120);
+
+  ry=shY+shS+60;
+  // bars
+  drawReportBar(ctx,rx,ry,rw,"LEFT / RIGHT",r.Lp,r.Rp,"L","R","#22d3ee","#fb923c");
+  ry+=120;
+  drawReportBar(ctx,rx,ry,rw,"TOP / BOTTOM",r.Tp,r.Bp,"T","B","#22d3ee","#fb923c");
+  ry+=100;
+
+  // worth-grading verdict (only if the user entered a graded value)
+  const w=state.worth;
+  if(w&&w.graded>0){
+    const cmap={good:"#34d399",warn:"#fbbf24",bad:"#f87171",neutral:"#8aa0b4"};
+    const col=cmap[w.cls]||"#8aa0b4";
+    roundRect(ctx,rx,ry,rw,86,12);ctx.fillStyle="#0e141c";ctx.fill();
+    ctx.strokeStyle=col+"66";ctx.lineWidth=1;ctx.stroke();
+    ctx.textAlign="left";ctx.fillStyle="#5d7286";ctx.font="700 12px 'Segoe UI',sans-serif";
+    ctx.fillText("WORTH GRADING?",rx+18,ry+26);
+    ctx.fillStyle=col;ctx.font="800 24px 'Segoe UI',sans-serif";
+    ctx.fillText(w.verdict,rx+18,ry+56);
+    ctx.textAlign="right";ctx.fillStyle="#8aa0b4";ctx.font="600 13px 'Segoe UI',sans-serif";
+    const money=v=>`${w.cur}${Math.round(v).toLocaleString()}`;
+    ctx.fillText("Net "+(w.net>=0?"+":"−")+money(Math.abs(w.net))+"  ·  cost "+money(w.cost),rx+rw-18,ry+34);
+    ctx.fillText("ROI "+w.roi.toFixed(0)+"%  ·  raw "+money(w.raw)+" → graded "+money(w.graded),rx+rw-18,ry+56);
+  }
+
+  // footer
+  ctx.fillStyle="#3a4a5c";ctx.font="500 14px 'Segoe UI',sans-serif";ctx.textAlign="left";
+  const d=new Date();
+  ctx.fillText("Generated "+d.toLocaleDateString()+" "+d.toLocaleTimeString().slice(0,5)+" · cardcenter (offline tool)",P,H-46);
+  return cv;
+}
+function drawReportBar(ctx,x,y,w,title,lp,rp,lc,rc,colL,colR){
+  ctx.textAlign="left";ctx.fillStyle="#8aa0b4";ctx.font="700 14px 'Segoe UI',sans-serif";
+  ctx.fillText(title,x,y);
+  ctx.textAlign="right";ctx.fillStyle="#e6edf3";ctx.font="700 18px 'Segoe UI',sans-serif";
+  ctx.fillText(`${lp.toFixed(1)} ${lc}  ·  ${rc} ${rp.toFixed(1)}`,x+w,y);
+  const by=y+14,bh=40;
+  roundRect(ctx,x,by,w,bh,9);ctx.fillStyle="#0c1219";ctx.fill();
+  ctx.strokeStyle="#1e2a38";ctx.lineWidth=1;ctx.stroke();
+  ctx.save();roundRect(ctx,x,by,w,bh,9);ctx.clip();
+  const split=w*lp/100;
+  let g=ctx.createLinearGradient(x,0,x+split,0);g.addColorStop(0,"#0e7490");g.addColorStop(1,colL);
+  ctx.fillStyle=g;ctx.fillRect(x,by,split,bh);
+  g=ctx.createLinearGradient(x+split,0,x+w,0);g.addColorStop(0,colR);g.addColorStop(1,"#7c2d12");
+  ctx.fillStyle=g;ctx.fillRect(x+split,by,w-split,bh);
+  ctx.restore();
+  // mid line
+  ctx.strokeStyle="rgba(255,255,255,.3)";ctx.beginPath();ctx.moveTo(x+w/2,by);ctx.lineTo(x+w/2,by+bh);ctx.stroke();
+  // marker
+  ctx.strokeStyle="#fff";ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x+split,by-4);ctx.lineTo(x+split,by+bh+4);ctx.stroke();
+  ctx.textAlign="left";ctx.fillStyle="#04121a";ctx.font="800 14px 'Segoe UI',sans-serif";ctx.textBaseline="middle";
+  ctx.fillText(lc+" "+lp.toFixed(1),x+12,by+bh/2);
+  ctx.textAlign="right";ctx.fillText(rp.toFixed(1)+" "+rc,x+w-12,by+bh/2);
+  ctx.textBaseline="alphabetic";
+}
+function wrapText(ctx,text,x,y,maxW,lh){
+  const words=text.split(" ");let line="",yy=y;
+  for(const wd of words){
+    const t=line?line+" "+wd:wd;
+    if(ctx.measureText(t).width>maxW&&line){ctx.fillText(line,x,yy);line=wd;yy+=lh;}
+    else line=t;
+  }
+  if(line)ctx.fillText(line,x,yy);
+}
+
+// ---------- Downloads ----------
+function download(canvas,name){
+  canvas.toBlob(b=>{
+    const u=URL.createObjectURL(b);const a=document.createElement("a");
+    a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);
+  },"image/png");
+}
+$("dlReport").onclick=()=>{const cv=drawReport();if(cv){download(cv,"centering-report.png");toast("Report downloaded");}};
+$("dlSlab").onclick=()=>{
+  const cv=document.createElement("canvas");const W=600,H=860;
+  cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
+  ctx.fillStyle="#0b0f14";ctx.fillRect(0,0,W,H);
+  renderSlabInto(ctx,20,20,W-40,H-40);
+  download(cv,"slab.png");toast("Slab downloaded");
+};
+
+// ---------- Toast ----------
+let toastT;
+function toast(msg){
+  const t=$("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2200);
+}
+})();
+</script>
+</body>
+</html>
