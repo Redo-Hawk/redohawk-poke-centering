@@ -71,6 +71,18 @@
   .pill.active .n{background:linear-gradient(135deg,var(--crimson),var(--orange));color:#04121a}
   .pill.done{color:var(--green);border-color:rgba(52,211,153,.4)}
   .pill.done .n{background:var(--green);color:#04121a}
+  .side-tabs{
+    display:flex;gap:4px;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:4px;
+    backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);
+  }
+  .side-tabs button{
+    border:none;background:transparent;color:var(--muted);font-size:12.5px;font-weight:700;
+    padding:8px 16px;border-radius:9px;cursor:pointer;transition:.15s;font-family:inherit;white-space:nowrap;
+  }
+  .side-tabs button:hover{color:var(--txt)}
+  .side-tabs button.on{background:linear-gradient(135deg,var(--cyan),#3b82f6);color:#04121a;box-shadow:0 2px 10px rgba(34,211,238,.3)}
+  .side-tabs button small{display:block;font-size:9px;font-weight:600;opacity:.75;letter-spacing:.3px}
   header .spacer{flex:1}
   .ghost-btn{
     background:var(--panel2);border:1px solid var(--line);color:var(--muted);
@@ -117,7 +129,7 @@
   /* Instruction banner */
   .banner{
     position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:20;
-    display:flex;align-items:center;gap:14px;max-width:min(680px,90%);
+    display:flex;align-items:center;gap:14px;max-width:min(560px, calc(100% - 150px));
     background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:16px;
     padding:13px 18px;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.07);
     backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);
@@ -182,6 +194,23 @@
   .sec:nth-child(8){animation-delay:.3s}
   .sec h3{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--faint);margin-bottom:14px;font-weight:700}
 
+  .acc-head{
+    all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;
+    width:100%;min-height:40px;cursor:pointer;padding:2px 0;color:inherit;font:inherit;text-align:left;
+  }
+  .acc-head h3{margin-bottom:0}
+  .acc-chevron{
+    color:var(--faint);font-size:11px;transition:transform .25s ease;flex:none;margin-left:10px;
+  }
+  .acc-head[aria-expanded="true"] .acc-chevron{transform:rotate(180deg)}
+  .acc-head:focus-visible{outline:2px solid var(--accent2);outline-offset:2px;border-radius:6px}
+  .acc-body{
+    display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease;
+  }
+  .acc-head[aria-expanded="true"] + .acc-body{grid-template-rows:1fr}
+  .acc-body-inner{overflow:hidden;min-height:0}
+  .acc-head[aria-expanded="true"] + .acc-body .acc-body-inner{padding-top:14px}
+
   .placeholder{color:var(--faint);font-size:13px;line-height:1.6;text-align:center;padding:24px 8px}
   .placeholder .big{font-size:30px;opacity:.5;margin-bottom:8px}
 
@@ -242,31 +271,6 @@
   .score-meta .grade{font-size:19px;font-weight:800;letter-spacing:.3px}
   .score-meta .sub{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.5}
 
-  /* Worth grading */
-  .worth-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .worth-grid label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.3px}
-  .worth-grid label.full{grid-column:1/-1}
-  .worth-grid input,.worth-grid select{
-    background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.09);color:var(--txt);border-radius:8px;
-    padding:8px 10px;font-size:13px;font-family:inherit;outline:none;transition:.15s;width:100%;
-  }
-  .worth-grid input:focus,.worth-grid select:focus{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(0,229,255,.2)}
-  .worth-grid .infield{position:relative}
-  .worth-grid .infield .cur{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--faint);font-size:12px;pointer-events:none}
-  .worth-out{margin-top:16px;border:1px solid rgba(255,255,255,.09);border-radius:12px;overflow:hidden;background:rgba(0,0,0,.2)}
-  .worth-verdict{display:flex;align-items:center;gap:12px;padding:14px 16px;font-weight:800;font-size:16px}
-  .worth-verdict .vic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:17px;flex:none}
-  .worth-verdict.good{color:var(--green)} .worth-verdict.good .vic{background:rgba(52,211,153,.15)}
-  .worth-verdict.warn{color:var(--amber)} .worth-verdict.warn .vic{background:rgba(251,191,36,.15)}
-  .worth-verdict.bad{color:var(--red)}    .worth-verdict.bad .vic{background:rgba(248,113,113,.15)}
-  .worth-verdict.neutral{color:var(--muted)} .worth-verdict.neutral .vic{background:#1c2735}
-  .worth-rows{border-top:1px solid var(--line);padding:12px 16px;display:flex;flex-direction:column;gap:8px}
-  .worth-rows .row{display:flex;justify-content:space-between;font-size:13px}
-  .worth-rows .row span{color:var(--muted)}
-  .worth-rows .row b{font-variant-numeric:tabular-nums}
-  .worth-rows .row b.pos{color:var(--green)} .worth-rows .row b.neg{color:var(--red)}
-  .worth-note{font-size:11.5px;color:var(--faint);line-height:1.5;padding:0 16px 12px}
-
   .slabbox{display:flex;justify-content:center;padding:6px 0}
   #slabCanvas{max-width:100%;border-radius:10px;box-shadow:var(--shadow)}
 
@@ -295,7 +299,7 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   #coffeeBubble{
-    position:fixed;right:18px;bottom:18px;z-index:40;width:48px;height:48px;border-radius:50%;
+    position:absolute;right:18px;bottom:18px;z-index:26;width:48px;height:48px;border-radius:50%;
     background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
     backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);
     box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.07);
@@ -325,7 +329,7 @@
     .banner{left:10px;right:10px;transform:none;max-width:none;font-size:12.5px}
     .banner .txt{font-size:12.5px}
     .toolbar button{width:40px;height:40px}
-    .worth-grid{grid-template-columns:1fr}
+    .side-tabs button{padding:6px 10px}
     .seg{flex-wrap:wrap}
   }
 </style>
@@ -336,6 +340,10 @@
     <div class="brand">
       <img src="data:image/webp;base64,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" alt="RedoHawk">
       <div><span class="name">REDOHAWK</span><small>Card Centering Lab</small></div>
+    </div>
+    <div class="side-tabs" id="sideToggle">
+      <button data-side="front" class="on">FRONT</button>
+      <button data-side="back">BACK <small>optional</small></button>
     </div>
     <div class="steps" id="steps">
       <div class="pill" data-step="1"><span class="n">1</span> Import</div>
@@ -379,76 +387,110 @@
           <p>Measure your card's centering like a grader — free, private, offline</p>
           <button class="btn" id="browseBtn">Choose a file</button>
           <div class="dz-hint">PNG · JPG · WEBP — your photos never leave your device</div>
+          <div class="dz-hint" id="dzSideHint" style="display:none">Back side is optional — grades use verso tolerances</div>
         </div>
       </div>
+
+      <a id="coffeeBubble" href="https://buymeacoffee.com/redohawk" target="_blank" rel="noopener">
+        <img src="data:image/webp;base64,UklGRrAEAABXRUJQVlA4IKQEAAAQFwCdASqAAIAAPpFInUslpKKhphQJELASCWMKFshMML1Rhl/n4FW3C58Tznt+Q3nSfccvPuWSOSv4k98so65TwyaXHHp6Luhr619gccMramHZTUhDCC5W9fqGP61hLNX9mMELg4k7/zI6rCsMe/ITPuJpKzAg/er8MpnA9BDi6zQk0pwDvO2q81Bt4i/fFq8Y6HbdfbPDrkAD9eDV1H80vqTAtO+bEvhXbJ2wCQQq9JVTI58pO3E7ORlxLMOyo5GwAP7/Y8kAkZWMhN5gpMyAoKJXgLxU1V6w4ihgJPVkh6be8K5JALBDE3zTEsiHyH56Z+rj5E8hmANHpGivdu+RmxkpWZxMW1H+C4/46ZIymbVrzvwogUGN5pTiaFX3h49sV2t8fWQjmSlfeLwvSqHsMeKfJl3nd3OvQEf+vpFzXsh/Lt4rJuN5R1Ed1VAvh4QW9VEz38mrfL0nNWz381t1mr6h2BudIGpVlwp4dRky4e8ALgWaZS0W6KfWnFoS7Yt41H/Dz6gPpwt8nr2W1VALo+1v/C6n87doU6I//hDZy5LcU3J243pbwNf4m5cRi61h+4eXtsvtfeKWJ8AhglaGiewEO5XD7MSnAbA7k/efWZDZH33rwdfGyMOkGasSVVr+sFt4gTks4vmfGp+plJNMl374RTzhRPAXUFdUz36UcIuYs+rrYBq3G/hkJmOsNy0qcP+vjEhnqFlQSFFPBZ0ivUN60WP4mAcSSF/mPllKsCXQeO8ZfBuLGshH5nbYbultb2Eb7Mgvc3zh+x78/0LepTTdGrtymOn/bnNmQgynpJdaeMcVV2AAenCvSJwrbnXyaZi01/3IB2AGtLk2aWZ/Qh9g+WvCRtQn425bvKWZhLLIwIxVwlSGNMJvI2zsJTPfDrvn27eL75J2XNAHjwfOGCo5o8bohHk1QY7iPp0iXyUON77+ow3FXcLGXSvLaZxJq+zEfsov1poNLR9OjyhOOj4/nABoCsafKujJGL5+AkMZwCxnl02d9U81TwSLnkXfb68JeIukzaUJDpchzpoL58+SPL6D+THg+qe2RfUy9gYfn/qyJEL6pPrF6AhkvVYhfr9V6OF46dmEjQJqXq5FfsjUQWRU4DO0hpCB/Ps0hLRnY/H80PIXBtDYGR/bHgFvBCp4hwzAmZcExJPgD8HGg6r7zkosq5Fk9QqhvZeSbyz2P3DlKwzkGtqvqHSXucmKHmZb37knCMAb2wbdStjZK4SpV5vuMXB0N/JT0VZx6Dua4zzA6HCtjY/d98yMoLnJNYCLCPxQpU8zKoNHfO8/4Wm11MPjrdcfkdPi3DeEkzmGY0e77p1xv0B6XyTg0PgprDVxzFo16q6m6efgxSvzrS9EnkoCm8Uxnpx/2PAiqhxz1FGMaE94f1wrFXbPi18J34Ph0dvkUI7cIT1gW937liBqbLvi4yyOg3SE6PUM43HYkMLXYLa0BzPgs86t1UD4Qez7iDqoJOIraDduc4LCUlF+Iu8O5laTKkCWtBBCpNtSh87YS2jL0+3N/04T5bPOyiOcEVyZEvUaZXjGCiACBrbWAed9i8fmGZVpAqIAAAAAAAA=" alt="">
+        <span>Buy me a coffee</span>
+      </a>
     </div>
 
     <aside>
       <!-- guide -->
       <div class="sec" id="guideSec">
-        <h3>How it works</h3>
-        <div class="miniguide">
-          <b>1.</b> Import a card photo.<br>
-          <b>2.</b> Click the <b style="color:var(--cyan)">4 outer corners</b> (card edge), guided order.<br>
-          <b>3.</b> Click the <b style="color:var(--amber)">4 inner corners</b> (printed frame inside the border).<br>
-          <b>4.</b> Read your L/R · T/B centering, grade & slab — then download.<br><br>
-          <span style="color:var(--faint)">Drag any point to adjust. Scroll to zoom, drag the background to pan.</span>
+        <button class="acc-head" data-acc="guideSec" aria-expanded="true">
+          <h3>How it works</h3>
+          <span class="acc-chevron">▾</span>
+        </button>
+        <div class="acc-body" id="guideSec-body">
+          <div class="acc-body-inner">
+            <div class="miniguide">
+              <b>1.</b> Import a card photo.<br>
+              <b>2.</b> Click the <b style="color:var(--cyan)">4 outer corners</b> (card edge), guided order.<br>
+              <b>3.</b> Click the <b style="color:var(--amber)">4 inner corners</b> (printed frame inside the border).<br>
+              <b>4.</b> Read your L/R · T/B centering, grade & slab — then download.<br><br>
+              <span style="color:var(--faint)">Drag any point to adjust. Scroll to zoom, drag the background to pan.</span>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- rounded corner radius -->
       <div class="sec" id="radiusSec" style="display:none">
-        <h3>Rounded corner guide</h3>
-        <input type="range" id="cornerR" min="1.5" max="9" step="0.1" value="4.5">
-        <div class="rngval"><span>sharp</span><b id="cornerRVal">4.5%</b><span>round</span></div>
-        <div class="miniguide" style="margin-top:10px">
-          Pokémon cards have <b>rounded corners</b>. Drag each outer corner so the
-          <b style="color:var(--cyan)">cyan arc</b> hugs the real rounded corner and the
-          <b style="color:var(--red)">red dashed edges</b> sit on the card edges.
+        <button class="acc-head" data-acc="radiusSec" aria-expanded="true">
+          <h3>Rounded corner guide</h3>
+          <span class="acc-chevron">▾</span>
+        </button>
+        <div class="acc-body" id="radiusSec-body">
+          <div class="acc-body-inner">
+            <input type="range" id="cornerR" min="1.5" max="9" step="0.1" value="4.5">
+            <div class="rngval"><span>sharp</span><b id="cornerRVal">4.5%</b><span>round</span></div>
+            <div class="miniguide" style="margin-top:10px">
+              Pokémon cards have <b>rounded corners</b>. Drag each outer corner so the
+              <b style="color:var(--cyan)">cyan arc</b> hugs the real rounded corner and the
+              <b style="color:var(--red)">red dashed edges</b> sit on the card edges.
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- marker colors -->
       <div class="sec" id="colorsSec" style="display:none">
-        <h3>Marker colors</h3>
-        <div class="color-row"><label>Outer edge</label><input type="color" id="colorOuter" value="#ff2d78"></div>
-        <div class="color-row"><label>Inner frame</label><input type="color" id="colorInner" value="#00e5ff"></div>
-        <div class="color-row"><label>Margins</label><input type="color" id="colorMargin" value="#ffffff"></div>
-        <button class="ghost-btn" id="colorsReset" style="width:100%">Reset colors</button>
+        <button class="acc-head" data-acc="colorsSec" aria-expanded="false">
+          <h3>Marker colors</h3>
+          <span class="acc-chevron">▾</span>
+        </button>
+        <div class="acc-body" id="colorsSec-body">
+          <div class="acc-body-inner">
+            <div class="color-row"><label>Outer edge</label><input type="color" id="colorOuter" value="#ff2d78"></div>
+            <div class="color-row"><label>Inner frame</label><input type="color" id="colorInner" value="#00e5ff"></div>
+            <div class="color-row"><label>Margins</label><input type="color" id="colorMargin" value="#ffffff"></div>
+            <button class="ghost-btn" id="colorsReset" style="width:100%">Reset colors</button>
+          </div>
+        </div>
       </div>
 
       <!-- result -->
-      <div class="sec">
-        <h3>Centering</h3>
-        <div id="resultEmpty" class="placeholder">
-          <div class="big">📐</div>
-          Place all 8 points to compute<br>Left/Right &amp; Top/Bottom centering.
-        </div>
-        <div id="resultBody" style="display:none">
-          <div class="axis">
-            <div class="axis-head">
-              <span class="lbl">LEFT / RIGHT</span>
-              <span class="val" id="lrVal"></span>
+      <div class="sec" id="centeringSec">
+        <button class="acc-head" data-acc="centeringSec" aria-expanded="true">
+          <h3>Centering</h3>
+          <span class="acc-chevron">▾</span>
+        </button>
+        <div class="acc-body" id="centeringSec-body">
+          <div class="acc-body-inner">
+            <div id="resultEmpty" class="placeholder">
+              <div class="big">📐</div>
+              Place all 8 points to compute<br>Left/Right &amp; Top/Bottom centering.
             </div>
-            <div class="bar">
-              <div class="fillL" id="lrFillL"></div>
-              <div class="fillR" id="lrFillR"></div>
-              <div class="mid"></div>
-              <div class="mk" id="lrMk"></div>
-              <span class="lt" id="lrLt"></span><span class="rt" id="lrRt"></span>
-            </div>
-          </div>
-          <div class="axis">
-            <div class="axis-head">
-              <span class="lbl">TOP / BOTTOM</span>
-              <span class="val" id="tbVal"></span>
-            </div>
-            <div class="bar">
-              <div class="fillL" id="tbFillL"></div>
-              <div class="fillR" id="tbFillR"></div>
-              <div class="mid"></div>
-              <div class="mk" id="tbMk"></div>
-              <span class="lt" id="tbLt"></span><span class="rt" id="tbRt"></span>
+            <div id="resultBody" style="display:none">
+              <div class="axis">
+                <div class="axis-head">
+                  <span class="lbl">LEFT / RIGHT</span>
+                  <span class="val" id="lrVal"></span>
+                </div>
+                <div class="bar">
+                  <div class="fillL" id="lrFillL"></div>
+                  <div class="fillR" id="lrFillR"></div>
+                  <div class="mid"></div>
+                  <div class="mk" id="lrMk"></div>
+                  <span class="lt" id="lrLt"></span><span class="rt" id="lrRt"></span>
+                </div>
+              </div>
+              <div class="axis">
+                <div class="axis-head">
+                  <span class="lbl">TOP / BOTTOM</span>
+                  <span class="val" id="tbVal"></span>
+                </div>
+                <div class="bar">
+                  <div class="fillL" id="tbFillL"></div>
+                  <div class="fillR" id="tbFillR"></div>
+                  <div class="mid"></div>
+                  <div class="mk" id="tbMk"></div>
+                  <span class="lt" id="tbLt"></span><span class="rt" id="tbRt"></span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -456,133 +498,131 @@
 
       <!-- score -->
       <div class="sec" id="scoreSec" style="display:none">
-        <h3>Centering grade</h3>
-        <div class="grade-controls">
-          <div class="seg" id="sideToggle">
-            <button data-side="front" class="on">Front (recto)</button>
-            <button data-side="back">Back (verso)</button>
+        <button class="acc-head" data-acc="scoreSec" aria-expanded="true">
+          <h3>Centering grade</h3>
+          <span class="acc-chevron">▾</span>
+        </button>
+        <div class="acc-body" id="scoreSec-body">
+          <div class="acc-body-inner">
+            <div class="grade-controls">
+              <div class="seg" id="companyToggle">
+                <button data-co="PSA" class="on">PSA</button>
+                <button data-co="BGS">BGS</button>
+                <button data-co="CGC">CGC</button>
+                <button data-co="PCA">PCA</button>
+              </div>
+            </div>
+            <div class="score-wrap">
+              <div class="shield">
+                <div class="inner"><div class="num" id="scoreNum">–</div><div class="of" id="scoreOf">/ 10</div></div>
+              </div>
+              <div class="score-meta">
+                <div class="grade" id="gradeLbl">—</div>
+                <div class="sub" id="gradeSub"></div>
+              </div>
+            </div>
+            <div class="cmp" id="cmpTable"></div>
+            <div class="worst-note" id="worstNote"></div>
           </div>
-          <div class="seg" id="companyToggle">
-            <button data-co="PSA" class="on">PSA</button>
-            <button data-co="BGS">BGS</button>
-            <button data-co="CGC">CGC</button>
-            <button data-co="PCA">PCA</button>
-          </div>
-        </div>
-        <div class="score-wrap">
-          <div class="shield">
-            <div class="inner"><div class="num" id="scoreNum">–</div><div class="of" id="scoreOf">/ 10</div></div>
-          </div>
-          <div class="score-meta">
-            <div class="grade" id="gradeLbl">—</div>
-            <div class="sub" id="gradeSub"></div>
-          </div>
-        </div>
-        <div class="cmp" id="cmpTable"></div>
-        <div class="worst-note" id="worstNote"></div>
-      </div>
-
-      <!-- worth grading -->
-      <div class="sec" id="worthSec" style="display:none">
-        <h3>Worth grading?</h3>
-        <div class="worth-grid">
-          <label class="full">Grading service
-            <select id="wService">
-              <option data-fee="22">PSA — Value Bulk (≈22)</option>
-              <option data-fee="25" selected>PSA — Value (≈25)</option>
-              <option data-fee="40">PSA — Regular (≈40)</option>
-              <option data-fee="18">CGC — Bulk/Value (≈18)</option>
-              <option data-fee="25">BGS — Standard (≈25)</option>
-              <option data-fee="0">Custom</option>
-            </select>
-          </label>
-          <label>Fee / card
-            <div class="infield"><input type="number" id="wFee" value="25" min="0" step="1"><span class="cur cur-sym">€</span></div>
-          </label>
-          <label>Shipping (round-trip)
-            <div class="infield"><input type="number" id="wShip" value="15" min="0" step="1"><span class="cur cur-sym">€</span></div>
-          </label>
-          <label>Currency
-            <select id="wCur"><option>€</option><option>$</option><option>£</option></select>
-          </label>
-          <label>Raw value (ungraded)
-            <div class="infield"><input type="number" id="wRaw" value="0" min="0" step="1"><span class="cur cur-sym">€</span></div>
-          </label>
-          <label class="full">Estimated value once graded
-            <div class="infield"><input type="number" id="wGraded" value="0" min="0" step="1"><span class="cur cur-sym">€</span></div>
-          </label>
-        </div>
-        <div class="worth-out">
-          <div class="worth-verdict neutral" id="wVerdict"><div class="vic" id="wVic">…</div><span id="wVerdictTxt">Enter your card's values</span></div>
-          <div class="worth-rows">
-            <div class="row"><span>Predicted grade ceiling</span><b id="wGrade">—</b></div>
-            <div class="row"><span>Total grading cost</span><b id="wCost">—</b></div>
-            <div class="row"><span>Net gain</span><b id="wNet">—</b></div>
-            <div class="row"><span>Return on cost</span><b id="wRoi">—</b></div>
-          </div>
-          <div class="worth-note" id="wNote"></div>
         </div>
       </div>
 
       <!-- slab -->
       <div class="sec" id="slabSec" style="display:none">
-        <h3>Slab preview</h3>
-        <div class="slabbox"><canvas id="slabCanvas" width="300" height="430"></canvas></div>
+        <button class="acc-head" data-acc="slabSec" aria-expanded="true">
+          <h3>Slab preview</h3>
+          <span class="acc-chevron">▾</span>
+        </button>
+        <div class="acc-body" id="slabSec-body">
+          <div class="acc-body-inner">
+            <div class="slabbox"><canvas id="slabCanvas" width="300" height="430"></canvas></div>
+          </div>
+        </div>
       </div>
 
       <!-- download -->
       <div class="sec" id="dlSec" style="display:none">
-        <h3>Export</h3>
-        <div class="dlrow">
-          <button class="btn" id="dlReport">⬇ Download report</button>
-          <button class="btn amber" id="dlSlab">⬇ Slab</button>
+        <button class="acc-head" data-acc="dlSec" aria-expanded="true">
+          <h3>Export</h3>
+          <span class="acc-chevron">▾</span>
+        </button>
+        <div class="acc-body" id="dlSec-body">
+          <div class="acc-body-inner">
+            <div class="dlrow">
+              <button class="btn" id="dlReport">⬇ Download report</button>
+              <button class="btn amber" id="dlSlab">⬇ Slab</button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- legend -->
-      <div class="sec">
-        <h3>Legend</h3>
-        <div class="legend">
-          <div class="li"><span class="sw" id="swOuter"></span> Outer corners — physical card edge</div>
-          <div class="li"><span class="sw" id="swInner"></span> Inner corners — printed graphic frame</div>
-          <div class="li"><span class="sw" id="swMargin"></span> Margins — measured border widths</div>
+      <div class="sec" id="legendSec">
+        <button class="acc-head" data-acc="legendSec" aria-expanded="false">
+          <h3>Legend</h3>
+          <span class="acc-chevron">▾</span>
+        </button>
+        <div class="acc-body" id="legendSec-body">
+          <div class="acc-body-inner">
+            <div class="legend">
+              <div class="li"><span class="sw" id="swOuter"></span> Outer corners — physical card edge</div>
+              <div class="li"><span class="sw" id="swInner"></span> Inner corners — printed graphic frame</div>
+              <div class="li"><span class="sw" id="swMargin"></span> Margins — measured border widths</div>
+            </div>
+          </div>
         </div>
         <div style="font-size:11.5px;color:var(--faint);margin-top:12px">
-          Free & open source — <a href="https://github.com/Redo-Hawk/redohawk-poke-centering" target="_blank" rel="noopener" style="color:var(--muted)">☆ Star on GitHub</a> · <a href="https://buymeacoffee.com/redohawk" target="_blank" rel="noopener" style="color:var(--muted)">☕ Support</a> · <span style="color:var(--faint)">v1.3</span>
+          Free & open source — <a href="https://github.com/Redo-Hawk/redohawk-poke-centering" target="_blank" rel="noopener" style="color:var(--muted)">☆ Star on GitHub</a> · <a href="https://buymeacoffee.com/redohawk" target="_blank" rel="noopener" style="color:var(--muted)">☕ Support</a> · <span style="color:var(--faint)">v1.4</span>
         </div>
       </div>
     </aside>
   </div>
 </div>
 
-<a id="coffeeBubble" href="https://buymeacoffee.com/redohawk" target="_blank" rel="noopener">
-  <img src="data:image/webp;base64,UklGRrAEAABXRUJQVlA4IKQEAAAQFwCdASqAAIAAPpFInUslpKKhphQJELASCWMKFshMML1Rhl/n4FW3C58Tznt+Q3nSfccvPuWSOSv4k98so65TwyaXHHp6Luhr619gccMramHZTUhDCC5W9fqGP61hLNX9mMELg4k7/zI6rCsMe/ITPuJpKzAg/er8MpnA9BDi6zQk0pwDvO2q81Bt4i/fFq8Y6HbdfbPDrkAD9eDV1H80vqTAtO+bEvhXbJ2wCQQq9JVTI58pO3E7ORlxLMOyo5GwAP7/Y8kAkZWMhN5gpMyAoKJXgLxU1V6w4ihgJPVkh6be8K5JALBDE3zTEsiHyH56Z+rj5E8hmANHpGivdu+RmxkpWZxMW1H+C4/46ZIymbVrzvwogUGN5pTiaFX3h49sV2t8fWQjmSlfeLwvSqHsMeKfJl3nd3OvQEf+vpFzXsh/Lt4rJuN5R1Ed1VAvh4QW9VEz38mrfL0nNWz381t1mr6h2BudIGpVlwp4dRky4e8ALgWaZS0W6KfWnFoS7Yt41H/Dz6gPpwt8nr2W1VALo+1v/C6n87doU6I//hDZy5LcU3J243pbwNf4m5cRi61h+4eXtsvtfeKWJ8AhglaGiewEO5XD7MSnAbA7k/efWZDZH33rwdfGyMOkGasSVVr+sFt4gTks4vmfGp+plJNMl374RTzhRPAXUFdUz36UcIuYs+rrYBq3G/hkJmOsNy0qcP+vjEhnqFlQSFFPBZ0ivUN60WP4mAcSSF/mPllKsCXQeO8ZfBuLGshH5nbYbultb2Eb7Mgvc3zh+x78/0LepTTdGrtymOn/bnNmQgynpJdaeMcVV2AAenCvSJwrbnXyaZi01/3IB2AGtLk2aWZ/Qh9g+WvCRtQn425bvKWZhLLIwIxVwlSGNMJvI2zsJTPfDrvn27eL75J2XNAHjwfOGCo5o8bohHk1QY7iPp0iXyUON77+ow3FXcLGXSvLaZxJq+zEfsov1poNLR9OjyhOOj4/nABoCsafKujJGL5+AkMZwCxnl02d9U81TwSLnkXfb68JeIukzaUJDpchzpoL58+SPL6D+THg+qe2RfUy9gYfn/qyJEL6pPrF6AhkvVYhfr9V6OF46dmEjQJqXq5FfsjUQWRU4DO0hpCB/Ps0hLRnY/H80PIXBtDYGR/bHgFvBCp4hwzAmZcExJPgD8HGg6r7zkosq5Fk9QqhvZeSbyz2P3DlKwzkGtqvqHSXucmKHmZb37knCMAb2wbdStjZK4SpV5vuMXB0N/JT0VZx6Dua4zzA6HCtjY/d98yMoLnJNYCLCPxQpU8zKoNHfO8/4Wm11MPjrdcfkdPi3DeEkzmGY0e77p1xv0B6XyTg0PgprDVxzFo16q6m6efgxSvzrS9EnkoCm8Uxnpx/2PAiqhxz1FGMaE94f1wrFXbPi18J34Ph0dvkUI7cIT1gW937liBqbLvi4yyOg3SE6PUM43HYkMLXYLa0BzPgs86t1UD4Qez7iDqoJOIraDduc4LCUlF+Iu8O5laTKkCWtBBCpNtSh87YS2jL0+3N/04T5bPOyiOcEVyZEvUaZXjGCiACBrbWAed9i8fmGZVpAqIAAAAAAAA=" alt="">
-  <span>Buy me a coffee</span>
-</a>
 <input type="file" id="fileInput" accept="image/*" style="display:none">
 <div class="toast" id="toast"></div>
 
 <script>
 (()=>{
 "use strict";
-console.log("RedoHawk centering v1.3");
+console.log("RedoHawk centering v1.4");
 const $=id=>document.getElementById(id);
 const SVGNS="http://www.w3.org/2000/svg";
 
+// ---------- Sidebar accordions ----------
+const accUserToggled=new Set(); // ids the user has manually clicked — excluded from all future auto open/collapse
+function accSet(id,open,opts){
+  opts=opts||{};
+  if(opts.auto && accUserToggled.has(id)) return; // manual override wins, forever, for this section
+  const head=document.querySelector(`.acc-head[data-acc="${id}"]`);
+  if(!head) return;
+  head.setAttribute("aria-expanded", open ? "true" : "false");
+}
+document.querySelectorAll(".acc-head").forEach(head=>{
+  head.addEventListener("click",()=>{
+    const id=head.dataset.acc;
+    const open=head.getAttribute("aria-expanded")==="true";
+    accUserToggled.add(id);
+    head.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+});
+
 // ---------- State ----------
 const state={
-  img:null, W:0, H:0,
-  s:1, tx:0, ty:0,          // transform: translate(tx,ty) scale(s)
-  outer:[], inner:[],        // image-pixel points {x,y}; order TL,TR,BR,BL
+  sides:{                     // per-side workspace: image-pixel points {x,y} (order TL,TR,BR,BL),
+                               // result, and warp ({canvas, innerDst, outW, outH})
+    front:{img:null,W:0,H:0,url:null,outer:[],inner:[],result:null,warp:null},
+    back:{img:null,W:0,H:0,url:null,outer:[],inner:[],result:null,warp:null},
+  },
+  s:1, tx:0, ty:0,          // transform: translate(tx,ty) scale(s) — shared/global across both sides
   drag:null,                 // {set,idx}
   pan:null,                  // {sx,sy,tx,ty,moved}
-  result:null,
-  warp:null,                 // {canvas, innerDst, outW, outH}
   cornerR:0.045,             // rounded-corner guide radius as fraction of card edge length
-  side:"front",              // front (recto) | back (verso) — different tolerances
+  side:"front",              // front (recto) | back (verso) — ALSO drives which workspace is active
   company:"PSA",             // PSA | BGS | CGC | PCA
   colors:{outer:"#ff2d78", inner:"#00e5ff", margin:"#ffffff"},
 };
+function S(){ return state.sides[state.side]; }
 $("swOuter").style.background=state.colors.outer;
 $("swInner").style.background=state.colors.inner;
 $("swMargin").style.background=state.colors.margin;
@@ -638,12 +678,13 @@ function screenToImage(clientX,clientY){
 }
 function fit(){
   const r=stage.getBoundingClientRect();
-  if(!state.W) return;
+  const side=S();
+  if(!side.W) return;
   const pad=70;
-  const s=Math.min((r.width-pad)/state.W,(r.height-pad)/state.H);
+  const s=Math.min((r.width-pad)/side.W,(r.height-pad)/side.H);
   state.s=s;
-  state.tx=(r.width-state.W*s)/2;
-  state.ty=(r.height-state.H*s)/2;
+  state.tx=(r.width-side.W*s)/2;
+  state.ty=(r.height-side.H*s)/2;
   applyTransform();
 }
 function zoomAt(clientX,clientY,factor){
@@ -661,20 +702,45 @@ function loadFile(file){
   const url=URL.createObjectURL(file);
   const im=new Image();
   im.onload=()=>{
-    state.img=im; state.W=im.naturalWidth; state.H=im.naturalHeight;
-    img.src=url; img.width=state.W; img.height=state.H;
-    ov.setAttribute("width",state.W); ov.setAttribute("height",state.H);
-    ov.setAttribute("viewBox",`0 0 ${state.W} ${state.H}`);
-    state.outer=[]; state.inner=[]; state.result=null; state.warp=null;
+    const side=S();
+    side.img=im; side.W=im.naturalWidth; side.H=im.naturalHeight; side.url=url;
+    img.src=url; img.width=side.W; img.height=side.H;
+    ov.setAttribute("width",side.W); ov.setAttribute("height",side.H);
+    ov.setAttribute("viewBox",`0 0 ${side.W} ${side.H}`);
+    side.outer=[]; side.inner=[]; side.result=null; side.warp=null;
     dropzone.classList.add("hidden");
     $("toolbar").style.display="flex";
     $("zoomLevel").style.display="block";
     $("banner").style.display="flex";
     fit();
+    accSet("guideSec", false, {auto:true});
     updateUI();
   };
   im.onerror=()=>toast("Could not read that image");
   im.src=url;
+}
+function loadActiveSide(){
+  const s=S();
+  if(s.img){
+    img.src=s.url; img.width=s.W; img.height=s.H;
+    ov.setAttribute("width",s.W); ov.setAttribute("height",s.H);
+    ov.setAttribute("viewBox",`0 0 ${s.W} ${s.H}`);
+    dropzone.classList.add("hidden");
+    $("toolbar").style.display="flex";
+    $("zoomLevel").style.display="block";
+    $("banner").style.display="flex";
+    fit();
+    accSet("guideSec", false, {auto:true});
+    updateUI();
+  }else{
+    img.src="";
+    dropzone.classList.remove("hidden");
+    $("toolbar").style.display="none";
+    $("zoomLevel").style.display="none";
+    $("banner").style.display="none";
+    $("dzSideHint").style.display = (state.side==="back") ? "block" : "none";
+    updateUI();
+  }
 }
 fileInput.addEventListener("change",e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
 $("browseBtn").onclick=()=>fileInput.click();
@@ -685,34 +751,38 @@ $("newImgBtn").onclick=()=>fileInput.click();
 ["dragleave","drop"].forEach(ev=>dropzone.addEventListener(ev,e=>{e.preventDefault();if(ev!=="drop")dropzone.classList.remove("drag");}));
 dropzone.addEventListener("drop",e=>{dropzone.classList.remove("drag");if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
 window.addEventListener("dragover",e=>e.preventDefault());
-window.addEventListener("drop",e=>{e.preventDefault();if(!state.img&&e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+window.addEventListener("drop",e=>{e.preventDefault();if(!S().img&&e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
 
 // ---------- Steps logic ----------
 function currentSet(){
-  if(state.outer.length<4) return "outer";
-  if(state.inner.length<4) return "inner";
+  const s=S();
+  if(s.outer.length<4) return "outer";
+  if(s.inner.length<4) return "inner";
   return "done";
 }
 function updateUI(){
   const set=currentSet();
+  const s=S();
   // step pills
-  const oDone=state.outer.length>=4, iDone=state.inner.length>=4;
-  setPill(1,!!state.img,!!state.img);
+  const oDone=s.outer.length>=4, iDone=s.inner.length>=4;
+  setPill(1,!!s.img,!!s.img);
   setPill(2, set==="outer", oDone);
   setPill(3, set==="inner", iDone);
   setPill(4, set==="done", set==="done");
   $("radiusSec").style.display = oDone ? "block" : "none";
+  if(set==="outer") accSet("radiusSec", true, {auto:true});
+  else if(set==="done") accSet("radiusSec", false, {auto:true});
   $("colorsSec").style.display = oDone ? "block" : "none";
   // banner
   const b=$("banner"), txt=$("bannerTxt"), dot=$("bannerDot"), btn=$("bannerBtn");
   stage.classList.toggle("placing", set!=="done");
   if(set==="outer"){
     dot.className="dot cyan";
-    txt.innerHTML=`<b>Outer corner ${state.outer.length+1}/4 — ${OUTER_LABELS[state.outer.length]}</b><small>Click the physical edge of the card. Order: TL → TR → BR → BL.</small>`;
+    txt.innerHTML=`<b>Outer corner ${s.outer.length+1}/4 — ${OUTER_LABELS[s.outer.length]}</b><small>Click the physical edge of the card. Order: TL → TR → BR → BL.</small>`;
     btn.style.display="none";
   }else if(set==="inner"){
     dot.className="dot amber";
-    txt.innerHTML=`<b>Inner corner ${state.inner.length+1}/4 — ${INNER_LABELS[state.inner.length]}</b><small>Click the printed graphic frame inside the border. Same order: TL → TR → BR → BL.</small>`;
+    txt.innerHTML=`<b>Inner corner ${s.inner.length+1}/4 — ${INNER_LABELS[s.inner.length]}</b><small>Click the printed graphic frame inside the border. Same order: TL → TR → BR → BL.</small>`;
     btn.style.display="none";
   }else{
     dot.className="dot green";
@@ -731,8 +801,9 @@ function setPill(n,active,done){
 function px(v){return v/state.s;} // screen px -> image units
 function renderOverlay(){
   while(ov.firstChild) ov.removeChild(ov.firstChild);
-  if(!state.img) return;
-  const all=[["outer",state.outer,state.colors.outer],["inner",state.inner,state.colors.inner]];
+  const s=S();
+  if(!s.img) return;
+  const all=[["outer",s.outer,state.colors.outer],["inner",s.inner,state.colors.inner]];
 
   // polygons
   all.forEach(([set,pts,col])=>{
@@ -763,7 +834,7 @@ function renderOverlay(){
   });
 
   // rounded-corner guides on the outer corners (Pokémon cards have rounded edges)
-  if(state.outer.length===4){ for(let i=0;i<4;i++) drawCornerGuide(i); }
+  if(s.outer.length===4){ for(let i=0;i<4;i++) drawCornerGuide(i); }
 
   // margins (only when complete)
   if(currentSet()==="done"){ drawMargins(); }
@@ -783,7 +854,7 @@ function textColorFor(hex){
 function drawCornerGuide(i){
   // rounded-corner alignment guide for outer corner i.
   // Draw a quarter arc tangent to both card edges so the user can match the card's rounded corner.
-  const o=state.outer, p=o[i];
+  const o=S().outer, p=o[i];
   const dirA=norm(sub(o[(i+1)%4],p));   // toward next corner (one card edge)
   const dirB=norm(sub(o[(i+3)%4],p));   // toward previous corner (other card edge)
   const eLen=(len(sub(o[(i+1)%4],p))+len(sub(o[(i+3)%4],p)))/2;
@@ -851,7 +922,8 @@ function drawHandle(set,i,p,col){
   ov.appendChild(g);
 }
 function drawMargins(){
-  const o=state.outer,inr=state.inner;
+  const side=S();
+  const o=side.outer,inr=side.inner;
   const uX=norm(add(sub(o[1],o[0]),sub(o[2],o[3])));
   const uY=norm(add(sub(o[3],o[0]),sub(o[2],o[1])));
   // representative segment midpoints for each side
@@ -861,7 +933,7 @@ function drawMargins(){
     {a:mid(o[0],o[1]),b:mid(inr[0],inr[1]),label:"T"},  // top
     {a:mid(inr[3],inr[2]),b:mid(o[3],o[2]),label:"B"},  // bottom
   ];
-  const r=state.result;
+  const r=side.result;
   const vals=r?{L:r.Lp,R:r.Rp,T:r.Tp,B:r.Bp}:null;
   segs.forEach(s=>{
     const lineW=px(2);
@@ -896,7 +968,7 @@ function drawMargins(){
 
 // ---------- Pointer: pan / place / drag ----------
 stage.addEventListener("pointerdown",e=>{
-  if(!state.img) return;
+  if(!S().img) return;
   if(e.button!==0 && e.button!==1) return;
   // background interaction → potential pan or place
   state.pan={sx:e.clientX,sy:e.clientY,tx:state.tx,ty:state.ty,moved:0,id:e.pointerId};
@@ -904,9 +976,10 @@ stage.addEventListener("pointerdown",e=>{
 });
 window.addEventListener("pointermove",e=>{
   if(state.drag){
+    const s=S();
     const p=screenToImage(e.clientX,e.clientY);
-    p.x=Math.max(0,Math.min(state.W,p.x));p.y=Math.max(0,Math.min(state.H,p.y));
-    (state.drag.set==="outer"?state.outer:state.inner)[state.drag.idx]=p;
+    p.x=Math.max(0,Math.min(s.W,p.x));p.y=Math.max(0,Math.min(s.H,p.y));
+    (state.drag.set==="outer"?s.outer:s.inner)[state.drag.idx]=p;
     if(currentSet()==="done") compute(); else renderOverlay();
     return;
   }
@@ -930,9 +1003,10 @@ window.addEventListener("pointerup",e=>{
     const wasClick=state.pan.moved<=PAN_THRESH;
     if(wasClick && currentSet()!=="done"){
       const p=screenToImage(e.clientX,e.clientY);
-      if(p.x>=0&&p.y>=0&&p.x<=state.W&&p.y<=state.H){
-        if(currentSet()==="outer") state.outer.push(p);
-        else state.inner.push(p);
+      const s=S();
+      if(p.x>=0&&p.y>=0&&p.x<=s.W&&p.y<=s.H){
+        if(currentSet()==="outer") s.outer.push(p);
+        else s.inner.push(p);
         updateUI();
       }
     }
@@ -941,7 +1015,7 @@ window.addEventListener("pointerup",e=>{
   }
 });
 stage.addEventListener("wheel",e=>{
-  if(!state.img)return;
+  if(!S().img)return;
   e.preventDefault();
   zoomAt(e.clientX,e.clientY, e.deltaY<0?1.12:1/1.12);
 },{passive:false});
@@ -951,25 +1025,27 @@ $("zoomIn").onclick=()=>{const r=stage.getBoundingClientRect();zoomAt(r.left+r.w
 $("zoomOut").onclick=()=>{const r=stage.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.25);};
 $("fitBtn").onclick=fit;
 $("undoBtn").onclick=()=>{
-  if(state.inner.length){state.inner.pop();}
-  else if(state.outer.length){state.outer.pop();}
+  const s=S();
+  if(s.inner.length){s.inner.pop();}
+  else if(s.outer.length){s.outer.pop();}
   else return;
-  state.result=null;state.warp=null;updateUI();
+  s.result=null;s.warp=null;updateUI();
 };
 $("clearBtn").onclick=()=>{
-  if(!state.outer.length&&!state.inner.length)return;
-  state.outer=[];state.inner=[];state.result=null;state.warp=null;updateUI();
+  const s=S();
+  if(!s.outer.length&&!s.inner.length)return;
+  s.outer=[];s.inner=[];s.result=null;s.warp=null;updateUI();
   toast("Points cleared");
 };
 $("cornerR").addEventListener("input",e=>{
   state.cornerR=(+e.target.value)/100;
   $("cornerRVal").textContent=(+e.target.value).toFixed(1)+"%";
   renderOverlay();
-  if(state.result) drawSlab($("slabCanvas"));
+  if(S().result) drawSlab($("slabCanvas"));
 });
-$("colorOuter").addEventListener("input",e=>{ state.colors.outer=e.target.value; $("swOuter").style.background=state.colors.outer; renderOverlay(); if(state.result) drawSlab($("slabCanvas")); });
-$("colorInner").addEventListener("input",e=>{ state.colors.inner=e.target.value; $("swInner").style.background=state.colors.inner; renderOverlay(); if(state.result) drawSlab($("slabCanvas")); });
-$("colorMargin").addEventListener("input",e=>{ state.colors.margin=e.target.value; $("swMargin").style.background=state.colors.margin; renderOverlay(); if(state.result) drawSlab($("slabCanvas")); });
+$("colorOuter").addEventListener("input",e=>{ state.colors.outer=e.target.value; $("swOuter").style.background=state.colors.outer; renderOverlay(); if(S().result) drawSlab($("slabCanvas")); });
+$("colorInner").addEventListener("input",e=>{ state.colors.inner=e.target.value; $("swInner").style.background=state.colors.inner; renderOverlay(); if(S().result) drawSlab($("slabCanvas")); });
+$("colorMargin").addEventListener("input",e=>{ state.colors.margin=e.target.value; $("swMargin").style.background=state.colors.margin; renderOverlay(); if(S().result) drawSlab($("slabCanvas")); });
 $("colorsReset").addEventListener("click",()=>{
   state.colors={outer:"#ff2d78",inner:"#00e5ff",margin:"#ffffff"};
   $("colorOuter").value=state.colors.outer;
@@ -979,32 +1055,26 @@ $("colorsReset").addEventListener("click",()=>{
   $("swInner").style.background=state.colors.inner;
   $("swMargin").style.background=state.colors.margin;
   renderOverlay();
-  if(state.result) drawSlab($("slabCanvas"));
-});
-// Worth-grading inputs
-["wFee","wShip","wRaw","wGraded","wCur"].forEach(id=>$(id).addEventListener("input",updateWorth));
-$("wService").addEventListener("change",e=>{
-  const fee=e.target.selectedOptions[0].dataset.fee;
-  if(+fee>0) $("wFee").value=fee;
-  updateWorth();
+  if(S().result) drawSlab($("slabCanvas"));
 });
 // Front/Back + grading company toggles
 $("sideToggle").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b)return;
+  if(b.dataset.side===state.side) return;
   state.side=b.dataset.side;
-  [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b));
-  if(state.result) applyGrade();
+  [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c.dataset.side===state.side));
+  loadActiveSide();
 });
 $("companyToggle").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b)return;
   state.company=b.dataset.co;
   [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b));
-  if(state.result) applyGrade();
+  if(S().result) applyGrade();
 });
-window.addEventListener("resize",()=>{if(state.img)applyTransform();});
+window.addEventListener("resize",()=>{if(S().img)applyTransform();});
 // keyboard
 window.addEventListener("keydown",e=>{
-  if(!state.img)return;
+  if(!S().img)return;
   if(e.key==="Backspace"||e.key==="z"&&(e.ctrlKey||e.metaKey)){e.preventDefault();$("undoBtn").click();}
   if(e.key==="+"||e.key==="="){$("zoomIn").click();}
   if(e.key==="-"){$("zoomOut").click();}
@@ -1013,7 +1083,8 @@ window.addEventListener("keydown",e=>{
 
 // ---------- Centering math ----------
 function compute(){
-  const o=state.outer, i=state.inner;
+  const side=S();
+  const o=side.outer, i=side.inner;
   // Reject malformed quads before any math: twisted click order or inner points
   // outside the card silently produce meaningless "valid-looking" ratios otherwise.
   const geo=[];
@@ -1021,7 +1092,7 @@ function compute(){
   if(!isProperQuad(i)) geo.push("inner corners crossed — click order must be TL → TR → BR → BL");
   if(geo.length===0 && i.some(p=>!pointInQuad(p,o))) geo.push("inner frame outside the card edge");
   if(geo.length){
-    state.result=null; state.warp=null;
+    side.result=null; side.warp=null;
     clearResult(); showInvalid(geo);
     renderOverlay();
     return;
@@ -1042,7 +1113,7 @@ function compute(){
   if(left<=0)badSides.push("left"); if(right<=0)badSides.push("right");
   if(top<=0)badSides.push("top"); if(bottom<=0)badSides.push("bottom");
   if(badSides.length){
-    state.result=null; state.warp=null;
+    side.result=null; side.warp=null;
     clearResult(); showInvalid([`inner frame touches or crosses the card edge (${badSides.join(", ")})`]);
     renderOverlay();
     return;
@@ -1053,8 +1124,8 @@ function compute(){
   const axisLR=Math.max(Lp,Rp), axisTB=Math.max(Tp,Bp);   // worst side of each axis (≥50)
   const worstAxis=Math.max(axisLR,axisTB);                 // the less-centered axis drives the grade
   const bestAxis =Math.min(axisLR,axisTB);
-  state.result={Lp,Rp,Tp,Bp,L,R,T,B,axisLR,axisTB,worstAxis,bestAxis};
-  state.warp=makeWarp(500,700);
+  side.result={Lp,Rp,Tp,Bp,L,R,T,B,axisLR,axisTB,worstAxis,bestAxis};
+  side.warp=makeWarp(500,700);
   renderResult();
   renderOverlay();
 }
@@ -1101,7 +1172,6 @@ function gradeClass(g){ const n=gradeNum(g); return n>=10?"g10":n>=9?"g9":n>=7?"
 function clearResult(){
   $("resultEmpty").style.display="block";$("resultBody").style.display="none";
   $("scoreSec").style.display="none";$("slabSec").style.display="none";$("dlSec").style.display="none";
-  $("worthSec").style.display="none";
 }
 let _emptyDefaultHTML=null;
 function showInvalid(bad){
@@ -1116,7 +1186,7 @@ function showInvalid(bad){
     txt.innerHTML=`<b style="color:var(--red)">Invalid points</b><small>${bad[0]} — drag points to fix.</small>`;}
 }
 function renderResult(){
-  const r=state.result; if(!r)return;
+  const r=S().result; if(!r)return;
   if(_emptyDefaultHTML!==null){$("resultEmpty").innerHTML=_emptyDefaultHTML;}
   const bd=$("bannerDot"); if(bd)bd.style.background="";
   if(currentSet()==="done"){
@@ -1125,7 +1195,7 @@ function renderResult(){
   }
   $("resultEmpty").style.display="none";$("resultBody").style.display="block";
   $("scoreSec").style.display="block";$("slabSec").style.display="block";$("dlSec").style.display="block";
-  $("worthSec").style.display="block";
+  accSet("scoreSec", true, {auto:true});
 
   $("lrVal").innerHTML=`<b>${r.Lp.toFixed(1)}</b> L &nbsp;·&nbsp; R <b>${r.Rp.toFixed(1)}</b>`;
   $("tbVal").innerHTML=`<b>${r.Tp.toFixed(1)}</b> T &nbsp;·&nbsp; B <b>${r.Bp.toFixed(1)}</b>`;
@@ -1136,7 +1206,7 @@ function renderResult(){
   drawSlab($("slabCanvas"));
 }
 function applyGrade(){
-  const r=state.result; if(!r)return;
+  const r=S().result; if(!r)return;
   const side=state.side, co=state.company;
   const e=gradeFor(co,side,r.bestAxis,r.worstAxis);
   // headline shield = selected company
@@ -1168,51 +1238,12 @@ function applyGrade(){
       ? `At <b>${r.worstAxis.toFixed(1)}/${(100-r.worstAxis).toFixed(1)}</b> the strict houses (BGS/CGC/PCA) cap below their top grade; PSA is the most lenient.`
       : `Tight centering — eligible for top grades if the rest of the card is clean.`);
 
-  // feed numeric grade to the worth calculator
-  state.result.gradeNum=gradeNum(e.grade);
-  state.result.gradeLabel=e.label;
-  state.result.companyLabel=STANDARDS[co].name+" "+(side==="front"?"recto":"verso");
-  state.result.score=gradeNum(e.grade); // back-compat (slab/report header)
-  state.result.grade=e.label;
-  state.result.gradeToken=gtxt;
-  updateWorth();
-}
-function gradeCeil(g){ return Math.floor(g); } // centering caps the achievable grade
-function updateWorth(){
-  const r=state.result;
-  const cur=$("wCur").value;
-  document.querySelectorAll(".cur-sym").forEach(e=>e.textContent=cur);
-  const fee=+$("wFee").value||0, ship=+$("wShip").value||0, raw=+$("wRaw").value||0, graded=+$("wGraded").value||0;
-  const cost=fee+ship;
-  const net=graded-raw-cost;
-  const invested=raw+cost;
-  const roi=invested>0?net/invested*100:0;
-  const money=v=>`${cur}${v.toLocaleString(undefined,{maximumFractionDigits:0})}`;
-  const co=r?(STANDARDS[state.company].name):null;
-  $("wGrade").textContent=r?(co+" "+r.gradeLabel):"—";
-  $("wCost").textContent=money(cost);
-  const netEl=$("wNet");netEl.textContent=(net>=0?"+":"−")+money(Math.abs(net));
-  netEl.className=net>=0?"pos":"neg";
-  $("wRoi").textContent=graded>0?roi.toFixed(0)+"%":"—";
-
-  const v=$("wVerdict"),vt=$("wVerdictTxt"),vic=$("wVic");
-  let cls,txt,icon;
-  if(graded<=0){cls="neutral";txt="Enter your card's values";icon="…";}
-  else if(net<0){cls="bad";txt="Not worth grading";icon="✕";}
-  else if(net<cost){cls="warn";txt="Marginal — thin profit";icon="≈";}
-  else{cls="good";txt="Worth grading";icon="✓";}
-  v.className="worth-verdict "+cls; vt.textContent=txt; vic.textContent=icon;
-
-  // caution: centering ceiling limits achievable grade
-  let note="";
-  if(r){
-    const g=r.gradeLabel;
-    if(r.gradeNum<8) note=`On centering, ${co} caps this around ${g}. A high-value grade (9–10) is unlikely, so be conservative on the graded value.`;
-    else if(r.gradeNum<10) note=`Centering supports ${co} ${g}. Final grade still depends on corners, edges & surface.`;
-    else note=`Centering is top-grade level for ${co} — but corners, edges & surface must also be clean to actually hit it.`;
-  }
-  $("wNote").textContent=note;
-  state.worth={cur,fee,ship,raw,graded,cost,net,roi,verdict:txt,cls};
+  r.gradeNum=gradeNum(e.grade);
+  r.gradeLabel=e.label;
+  r.companyLabel=STANDARDS[co].name+" "+(side==="front"?"recto":"verso");
+  r.score=gradeNum(e.grade); // back-compat (slab/report header)
+  r.grade=e.label;
+  r.gradeToken=gtxt;
 }
 function setBar(pfx,lp,rp,lc,rc){
   $(pfx+"FillL").style.width=lp+"%";
@@ -1261,7 +1292,7 @@ function affineTri(s,d){
   return [a,b,c,dd,e,f];
 }
 function makeWarp(outW,outH){
-  const o=state.outer;
+  const o=S().outer;
   const rect=[{x:0,y:0},{x:outW,y:0},{x:outW,y:outH},{x:0,y:outH}];
   const Hd2s=homography(rect,o);        // output rect → source quad
   const Hs2d=homography(o,rect);         // source quad → output rect (for inner pts)
@@ -1277,7 +1308,7 @@ function makeWarp(outW,outH){
       drawTri(ctx,[sA,sC,sD],[dA,dC,dD]);
     }
   }
-  const innerDst=state.inner.map(p=>applyH(Hs2d,p.x,p.y));
+  const innerDst=S().inner.map(p=>applyH(Hs2d,p.x,p.y));
   return {canvas:cv,innerDst,outW,outH};
 }
 function drawTri(ctx,s,d){
@@ -1287,14 +1318,14 @@ function drawTri(ctx,s,d){
   ctx.clip();
   const m=affineTri(s,d);
   ctx.setTransform(m[0],m[1],m[2],m[3],m[4],m[5]);
-  ctx.drawImage(state.img,0,0);
+  ctx.drawImage(S().img,0,0);
   ctx.restore();
   ctx.setTransform(1,0,0,1,0,0);
 }
 
 // ---------- Slab drawing ----------
 function drawSlab(canvas,scaleUp){
-  const r=state.result, w=state.warp; if(!r||!w)return;
+  const s=S(); const r=s.result, w=s.warp; if(!r||!w)return;
   const DPR=scaleUp||(window.devicePixelRatio>1?2:1.6);
   // logical size
   const LW=300,LH=430;
@@ -1310,7 +1341,7 @@ function roundRect(ctx,x,y,w,h,rad){
   ctx.arcTo(x,y+h,x,y,rad);ctx.arcTo(x,y,x+w,y,rad);ctx.closePath();
 }
 function renderSlabInto(ctx,X,Y,W,H){
-  const r=state.result, warp=state.warp;
+  const s=S(); const r=s.result, warp=s.warp;
   // slab shell
   ctx.save();
   const grad=ctx.createLinearGradient(X,Y,X,Y+H);
@@ -1375,7 +1406,7 @@ function renderSlabInto(ctx,X,Y,W,H){
 
 // ---------- Full report ----------
 function drawReport(){
-  const r=state.result; if(!r)return null;
+  const r=S().result; if(!r)return null;
   const W=1080,H=1500,P=70;
   const cv=document.createElement("canvas");cv.width=W;cv.height=H;
   const ctx=cv.getContext("2d");
@@ -1432,23 +1463,6 @@ function drawReport(){
   ry+=120;
   drawReportBar(ctx,rx,ry,rw,"TOP / BOTTOM",r.Tp,r.Bp,"T","B","#22d3ee","#fb923c");
   ry+=100;
-
-  // worth-grading verdict (only if the user entered a graded value)
-  const w=state.worth;
-  if(w&&w.graded>0){
-    const cmap={good:"#34d399",warn:"#fbbf24",bad:"#f87171",neutral:"#8aa0b4"};
-    const col=cmap[w.cls]||"#8aa0b4";
-    roundRect(ctx,rx,ry,rw,86,12);ctx.fillStyle="#0e141c";ctx.fill();
-    ctx.strokeStyle=col+"66";ctx.lineWidth=1;ctx.stroke();
-    ctx.textAlign="left";ctx.fillStyle="#5d7286";ctx.font="700 12px 'Segoe UI',sans-serif";
-    ctx.fillText("WORTH GRADING?",rx+18,ry+26);
-    ctx.fillStyle=col;ctx.font="800 24px 'Segoe UI',sans-serif";
-    ctx.fillText(w.verdict,rx+18,ry+56);
-    ctx.textAlign="right";ctx.fillStyle="#8aa0b4";ctx.font="600 13px 'Segoe UI',sans-serif";
-    const money=v=>`${w.cur}${Math.round(v).toLocaleString()}`;
-    ctx.fillText("Net "+(w.net>=0?"+":"−")+money(Math.abs(w.net))+"  ·  cost "+money(w.cost),rx+rw-18,ry+34);
-    ctx.fillText("ROI "+w.roi.toFixed(0)+"%  ·  raw "+money(w.raw)+" → graded "+money(w.graded),rx+rw-18,ry+56);
-  }
 
   // footer
   ctx.fillStyle="#3a4a5c";ctx.font="500 14px 'Segoe UI',sans-serif";ctx.textAlign="left";
