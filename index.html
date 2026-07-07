@@ -572,7 +572,7 @@
           </div>
         </div>
         <div style="font-size:11.5px;color:var(--faint);margin-top:12px">
-          Free & open source — <a href="https://github.com/Redo-Hawk/redohawk-poke-centering" target="_blank" rel="noopener" style="color:var(--muted)">☆ Star on GitHub</a> · <a href="https://buymeacoffee.com/redohawk" target="_blank" rel="noopener" style="color:var(--muted)">☕ Support</a> · <span style="color:var(--faint)">v1.6</span>
+          Free & open source — <a href="https://github.com/Redo-Hawk/redohawk-poke-centering" target="_blank" rel="noopener" style="color:var(--muted)">☆ Star on GitHub</a> · <a href="https://buymeacoffee.com/redohawk" target="_blank" rel="noopener" style="color:var(--muted)">☕ Support</a> · <span style="color:var(--faint)">v1.7</span>
         </div>
       </div>
     </aside>
@@ -585,7 +585,7 @@
 <script>
 (()=>{
 "use strict";
-console.log("RedoHawk centering v1.6");
+console.log("RedoHawk centering v1.7");
 const $=id=>document.getElementById(id);
 const SVGNS="http://www.w3.org/2000/svg";
 
@@ -915,9 +915,12 @@ function drawHandle(set,i,p,col){
   g.append(chCasing,ringCasing,ch,ring,core,lbl);
   g.addEventListener("pointerdown",e=>{
     e.stopPropagation();
-    state.drag={set,idx:i};
+    state.drag={set,idx:i,pointerId:e.pointerId};
     g.style.cursor="grabbing";
-    g.setPointerCapture(e.pointerId);
+    // Capture on the STAGE, not on this <g>: renderOverlay destroys the handle on the
+    // very first drag frame, which kills its capture — releasing the mouse outside the
+    // window then never delivers pointerup and the drag sticks forever (ghost drag).
+    try{stage.setPointerCapture(e.pointerId);}catch(_){}
   });
   ov.appendChild(g);
 }
@@ -976,6 +979,7 @@ stage.addEventListener("pointerdown",e=>{
 });
 window.addEventListener("pointermove",e=>{
   if(state.drag){
+    if(e.pointerId!==state.drag.pointerId) return;   // ignore other pointers/touches
     const s=S();
     const p=screenToImage(e.clientX,e.clientY);
     p.x=Math.max(0,Math.min(s.W,p.x));p.y=Math.max(0,Math.min(s.H,p.y));
@@ -984,6 +988,7 @@ window.addEventListener("pointermove",e=>{
     return;
   }
   if(state.pan){
+    if(e.pointerId!==state.pan.id) return;
     const dx=e.clientX-state.pan.sx, dy=e.clientY-state.pan.sy;
     state.pan.moved=Math.max(state.pan.moved,Math.hypot(dx,dy));
     if(state.pan.moved>PAN_THRESH){
@@ -993,13 +998,18 @@ window.addEventListener("pointermove",e=>{
     }
   }
 });
+function endDrag(){
+  state.drag=null;
+  document.querySelectorAll("#overlay g").forEach(g=>g.style.cursor="grab");
+}
 window.addEventListener("pointerup",e=>{
   if(state.drag){
-    state.drag=null;
-    document.querySelectorAll("#overlay g").forEach(g=>g.style.cursor="grab");
+    if(e.pointerId!==state.drag.pointerId) return;
+    endDrag();
     return;
   }
   if(state.pan){
+    if(e.pointerId!==state.pan.id) return;
     const wasClick=state.pan.moved<=PAN_THRESH;
     if(wasClick && currentSet()!=="done"){
       const p=screenToImage(e.clientX,e.clientY);
@@ -1013,6 +1023,16 @@ window.addEventListener("pointerup",e=>{
     state.pan=null;
     stage.classList.remove("panning");
   }
+});
+// A cancelled pointer or a lost window must never leave a drag armed — that's the
+// "points follow the mouse by themselves until refresh" bug.
+window.addEventListener("pointercancel",()=>{
+  if(state.drag) endDrag();
+  if(state.pan){state.pan=null;stage.classList.remove("panning");}
+});
+window.addEventListener("blur",()=>{
+  if(state.drag) endDrag();
+  if(state.pan){state.pan=null;stage.classList.remove("panning");}
 });
 stage.addEventListener("wheel",e=>{
   if(!S().img)return;
