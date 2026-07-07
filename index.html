@@ -572,7 +572,7 @@
           </div>
         </div>
         <div style="font-size:11.5px;color:var(--faint);margin-top:12px">
-          Free & open source — <a href="https://github.com/Redo-Hawk/redohawk-poke-centering" target="_blank" rel="noopener" style="color:var(--muted)">☆ Star on GitHub</a> · <a href="https://buymeacoffee.com/redohawk" target="_blank" rel="noopener" style="color:var(--muted)">☕ Support</a> · <span style="color:var(--faint)">v1.5</span>
+          Free & open source — <a href="https://github.com/Redo-Hawk/redohawk-poke-centering" target="_blank" rel="noopener" style="color:var(--muted)">☆ Star on GitHub</a> · <a href="https://buymeacoffee.com/redohawk" target="_blank" rel="noopener" style="color:var(--muted)">☕ Support</a> · <span style="color:var(--faint)">v1.6</span>
         </div>
       </div>
     </aside>
@@ -585,7 +585,7 @@
 <script>
 (()=>{
 "use strict";
-console.log("RedoHawk centering v1.5");
+console.log("RedoHawk centering v1.6");
 const $=id=>document.getElementById(id);
 const SVGNS="http://www.w3.org/2000/svg";
 
@@ -1166,6 +1166,30 @@ function gradeFor(coKey,side,bestAxis,worstAxis){
   for(const e of ladder){ if(worstAxis<=e.worst && (e.best==null||bestAxis<=e.best)) return e; }
   return ladder[ladder.length-1];
 }
+// A measurement sitting right AT a cutoff is a coin flip at the grading house — flag it.
+// Borderline = within SAFETY points of losing the tier (unless dead-centered, which can't be improved).
+const SAFETY=1.5;
+function gradeConfidence(coKey,side,bestAxis,worstAxis){
+  const ladder=STANDARDS[coKey][side];
+  const e=gradeFor(coKey,side,bestAxis,worstAxis);
+  const idx=ladder.indexOf(e);
+  const lower=idx>=0&&idx<ladder.length-1?ladder[idx+1]:null;
+  const gapWorst=e.worst-worstAxis;
+  // a dead-centered best axis (≤50.5) can't drift past its cap — never counts as at-risk
+  const gapBest=(e.best!=null&&bestAxis>50.5)?e.best-bestAxis:Infinity;
+  const gap=Math.min(gapWorst,gapBest);
+  const borderline=gap<SAFETY && worstAxis>50.5 && !!lower;
+  // just-missed: the tier ABOVE was lost by a hair — measurement-noise territory
+  let missed=null;
+  if(idx>0){
+    const up=ladder[idx-1];
+    const needWorst=Math.max(0,worstAxis-up.worst);
+    const needBest=up.best!=null?Math.max(0,bestAxis-up.best):0;
+    const by=Math.max(needWorst,needBest);
+    if(by>0&&by<SAFETY) missed={tier:up, by};
+  }
+  return {entry:e, lower, gap, borderline, missed};
+}
 function gradeNum(g){ return g==="10+"||g==="P10"||g==="BL10" ? 10 : (typeof g==="number"?g:parseFloat(g)||0); }
 function gradeTok(g){ return (typeof g==="string")?g:(Number.isInteger(g)?String(g):g.toFixed(1)); }
 function gradeClass(g){ const n=gradeNum(g); return n>=10?"g10":n>=9?"g9":n>=7?"g7":"glow"; }
@@ -1210,7 +1234,8 @@ function renderResult(){
 function applyGrade(){
   const r=S().result; if(!r)return;
   const side=state.side, co=state.company;
-  const e=gradeFor(co,side,r.bestAxis,r.worstAxis);
+  const conf=gradeConfidence(co,side,r.bestAxis,r.worstAxis);
+  const e=conf.entry;
   // headline shield = selected company
   const gtxt = (e.grade==="10+"||e.grade==="P10") ? (e.grade==="P10"?"P10":"10+")
              : (Number.isInteger(e.grade)?e.grade:e.grade.toFixed ? (Number.isInteger(e.grade)?e.grade:String(e.grade)) : e.grade);
@@ -1220,16 +1245,23 @@ function applyGrade(){
   $("gradeLbl").textContent=e.label;
   const lr=`${Math.max(r.Lp,r.Rp).toFixed(0)}/${Math.min(r.Lp,r.Rp).toFixed(0)}`;
   const tb=`${Math.max(r.Tp,r.Bp).toFixed(0)}/${Math.min(r.Tp,r.Bp).toFixed(0)}`;
-  $("gradeSub").innerHTML=`L/R <b>${lr}</b> · T/B <b>${tb}</b><br>Worst axis ${r.worstAxis.toFixed(1)}/${(100-r.worstAxis).toFixed(1)} — drives the centering grade.`;
+  const confLine = conf.borderline
+    ? `<b style="color:var(--amber)">⚠ Borderline ${e.label}</b> — only ${conf.gap.toFixed(1)}pt from the cutoff; graders could call this <b>${conf.lower.label}</b>.`
+    : conf.missed
+    ? `Missed <b style="color:var(--cyan)">${conf.missed.tier.label}</b> by just ${conf.missed.by.toFixed(1)}pt — re-check your points; this is measurement-noise territory.`
+    : `Worst axis ${r.worstAxis.toFixed(1)}/${(100-r.worstAxis).toFixed(1)} — drives the centering grade.`;
+  $("gradeSub").innerHTML=`L/R <b>${lr}</b> · T/B <b>${tb}</b><br>${confLine}`;
 
   // comparison table across all companies for the selected side
   const cmp=$("cmpTable"); cmp.innerHTML="";
   ["PSA","BGS","CGC","PCA"].forEach(k=>{
-    const g=gradeFor(k,side,r.bestAxis,r.worstAxis);
+    const kc=gradeConfidence(k,side,r.bestAxis,r.worstAxis);
+    const g=kc.entry;
     const row=document.createElement("div");
     row.className="crow"+(k===co?" sel":"");
+    const edge=kc.borderline?`<small style="color:var(--amber);display:block;text-align:right">⚠ edge — or ${kc.lower.label}</small>`:"";
     row.innerHTML=`<div class="co"><b>${STANDARDS[k].name}</b><small>${STANDARDS[k].sub}</small></div>`+
-                  `<div class="cg ${gradeClass(g.grade)}">${g.label}</div>`;
+                  `<div><div class="cg ${gradeClass(g.grade)}">${g.label}</div>${edge}</div>`;
     cmp.appendChild(row);
   });
   // honest note about why grades differ + ceiling
