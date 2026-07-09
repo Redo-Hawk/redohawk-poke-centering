@@ -100,6 +100,7 @@
   #stage{position:absolute;inset:0;overflow:hidden;cursor:grab;touch-action:none}
   #stage.placing{cursor:crosshair}
   #stage.panning{cursor:grabbing}
+  #stage.color-picking{cursor:crosshair}
   #scene{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
   #scene img{display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
   #overlay{position:absolute;left:0;top:0;overflow:visible}
@@ -118,6 +119,16 @@
   .toolbar button:hover{background:#1a2533;color:var(--txt)}
   .toolbar .sep{width:1px;background:var(--line);margin:4px 2px}
   .toolbar button.warn:hover{color:var(--red)}
+  .toolbar button#autoBtn{width:auto;padding:0 10px;gap:4px;font-size:13px;font-weight:700;color:#c4b5fd}
+  .toolbar button#autoBtn:hover{color:#a78bfa}
+  .toolbar button#straightenBtn{width:auto;padding:0 10px;gap:4px;font-size:13px;font-weight:700}
+  .toolbar button#straightenBtn.on{background:linear-gradient(135deg,var(--cyan),#3b82f6);color:#04121a}
+  .toolbar button#straightenBtn.on:hover{color:#04121a}
+  .toolbar select#cardCountHint{
+    height:36px;border-radius:8px;border:1px solid transparent;background:transparent;
+    color:var(--muted);font-size:12.5px;font-weight:700;font-family:inherit;padding:0 4px;cursor:pointer;
+  }
+  .toolbar select#cardCountHint:hover{background:#1a2533;color:var(--txt)}
 
   .zoomlevel{
     position:absolute;left:14px;bottom:14px;z-index:20;font-size:12px;color:var(--muted);
@@ -368,6 +379,16 @@
         <button id="zoomOut" title="Zoom out">−</button>
         <button id="zoomIn" title="Zoom in">＋</button>
         <button id="fitBtn" title="Fit to screen">⤢</button>
+        <button id="straightenBtn" title="Straighten card view">▤ Straighten</button>
+        <div class="sep"></div>
+        <button id="autoBtn" title="Auto-detect corners">✨ Auto</button>
+        <select id="cardCountHint" title="Card count hint — force how many cards to keep">
+          <option value="0">Auto</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
         <div class="sep"></div>
         <button id="undoBtn" title="Undo last point">↶</button>
         <button id="clearBtn" class="warn" title="Clear all points">🗑</button>
@@ -425,13 +446,36 @@
         </button>
         <div class="acc-body" id="radiusSec-body">
           <div class="acc-body-inner">
-            <input type="range" id="cornerR" min="1.5" max="9" step="0.1" value="4.5">
-            <div class="rngval"><span>sharp</span><b id="cornerRVal">4.5%</b><span>round</span></div>
+            <input type="range" id="cornerR" min="1.5" max="9" step="0.1" value="4">
+            <div class="rngval"><span>sharp</span><b id="cornerRVal">4.0%</b><span>round</span></div>
             <div class="miniguide" style="margin-top:10px">
               Pokémon cards have <b>rounded corners</b>. Drag each outer corner so the
               <b style="color:var(--cyan)">cyan arc</b> hugs the real rounded corner and the
               <b style="color:var(--red)">red dashed edges</b> sit on the card edges.
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- border color detection -->
+      <div class="sec" id="borderSec" style="display:none">
+        <button class="acc-head" data-acc="borderSec" aria-expanded="false">
+          <h3>Border detection</h3>
+          <span class="acc-chevron">▾</span>
+        </button>
+        <div class="acc-body" id="borderSec-body">
+          <div class="acc-body-inner">
+            <div class="color-row">
+              <label>Border color</label>
+              <div id="borderSwatch" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--line2);background:#3a4552;flex:none"></div>
+            </div>
+            <div class="seg" style="margin-bottom:14px">
+              <button id="borderAuto" class="on">Auto</button>
+              <button id="borderPick">💧 Pick</button>
+            </div>
+            <input type="range" id="borderTol" min="20" max="130" value="62">
+            <div class="rngval"><span>tight</span><b id="borderTolVal">62</b><span>loose</span></div>
+            <button class="btn" id="colorDetectBtn" style="width:100%;margin-top:14px">🎯 Detect inner frame</button>
           </div>
         </div>
       </div>
@@ -552,6 +596,9 @@
               <button class="btn" id="dlReport">⬇ Download report</button>
               <button class="btn amber" id="dlSlab">⬇ Slab</button>
             </div>
+            <div class="dlrow" style="margin-top:10px">
+              <button class="btn" id="dlStraight">⬇ Straightened card</button>
+            </div>
           </div>
         </div>
       </div>
@@ -572,7 +619,7 @@
           </div>
         </div>
         <div style="font-size:11.5px;color:var(--faint);margin-top:12px">
-          Free & open source — <a href="https://github.com/Redo-Hawk/redohawk-poke-centering" target="_blank" rel="noopener" style="color:var(--muted)">☆ Star on GitHub</a> · <a href="https://buymeacoffee.com/redohawk" target="_blank" rel="noopener" style="color:var(--muted)">☕ Support</a> · <span style="color:var(--faint)">v1.7</span>
+          Free & open source — <a href="https://github.com/Redo-Hawk/redohawk-poke-centering" target="_blank" rel="noopener" style="color:var(--muted)">☆ Star on GitHub</a> · <a href="https://buymeacoffee.com/redohawk" target="_blank" rel="noopener" style="color:var(--muted)">☕ Support</a> · <span style="color:var(--faint)">v2.0</span>
         </div>
       </div>
     </aside>
@@ -585,7 +632,7 @@
 <script>
 (()=>{
 "use strict";
-console.log("RedoHawk centering v1.7");
+console.log("RedoHawk centering v2.0");
 const $=id=>document.getElementById(id);
 const SVGNS="http://www.w3.org/2000/svg";
 
@@ -611,16 +658,19 @@ document.querySelectorAll(".acc-head").forEach(head=>{
 const state={
   sides:{                     // per-side workspace: image-pixel points {x,y} (order TL,TR,BR,BL),
                                // result, and warp ({canvas, innerDst, outW, outH})
-    front:{img:null,W:0,H:0,url:null,outer:[],inner:[],result:null,warp:null},
-    back:{img:null,W:0,H:0,url:null,outer:[],inner:[],result:null,warp:null},
+    front:{img:null,W:0,H:0,url:null,outer:[],inner:[],result:null,warp:null,rect:null},
+    back:{img:null,W:0,H:0,url:null,outer:[],inner:[],result:null,warp:null,rect:null},
   },
   s:1, tx:0, ty:0,          // transform: translate(tx,ty) scale(s) — shared/global across both sides
   drag:null,                 // {set,idx}
   pan:null,                  // {sx,sy,tx,ty,moved}
-  cornerR:0.045,             // rounded-corner guide radius as fraction of card edge length
+  cornerR:0.04,              // rounded-corner guide radius as fraction of card edge length
   side:"front",              // front (recto) | back (verso) — ALSO drives which workspace is active
   company:"PSA",             // PSA | BGS | CGC | PCA
   colors:{outer:"#ff2d78", inner:"#00e5ff", margin:"#ffffff"},
+  candidates:null,           // null, or {cards, workScale} while tappable auto-detect outlines are pending
+  border:{mode:"auto",color:null,tol:62,applied:false}, // border-color inner-frame detection
+  rectView:false,             // true while showing the rectified ("straightened") card instead of the photo
 };
 function S(){ return state.sides[state.side]; }
 $("swOuter").style.background=state.colors.outer;
@@ -666,6 +716,763 @@ function pointInQuad(pt,q){
   return true;
 }
 
+// ---------- Auto-detect (classical CV, no deps) ----------
+// All tuned constants live here so the pipeline is easy to iterate on.
+const CV = {
+  MAX_DIM:1100,               // work-canvas longer side, px
+  BLUR_PASSES:2,               // 3x3 box blur passes on grayscale
+  EDGE_PERCENTILE:0.92,        // percentile of |gradient| used as edge threshold
+  HIST_BINS:256,                // histogram bins for percentile threshold
+  HOUGH_THETA_STEP_DEG:1,       // theta accumulator step, degrees
+  HOUGH_RHO_STEP:2,             // rho accumulator step, px
+  HOUGH_NMS_WIN:5,               // non-max-suppression window (cells), odd
+  HOUGH_TOP_PEAKS:60,            // max number of hough peaks kept
+  HOUGH_PEAK_VOTE_FRAC:0.25,     // min votes as fraction of the top peak's votes
+  ANGLE_FAMILY_MIN_SEP_DEG:65,   // min separation between the two dominant angle clusters
+  ANGLE_FAMILY_MAX_SEP_DEG:115,  // max separation between the two dominant angle clusters
+  ANGLE_FAMILY_TOL_DEG:20,       // max angular distance (mod 180) from a cluster center to join it
+  ANGLE_HIST_BINS:180,           // theta histogram bins (1 per degree)
+  FAMILY_MAX_LINES:20,           // cap lines kept per angle family (top-voted) to bound quad search
+  MIN_LINE_PAIR_RHO_GAP_FRAC:0.15, // min |Δρ| between two lines of the same family, as fraction of minDim
+  QUAD_MAX_OOB_FRAC:0.08,        // max fraction of minDim a corner may lie outside canvas bounds
+  QUAD_MIN_AREA_FRAC:0.02,       // min quad area as fraction of canvas area
+  QUAD_MAX_AREA_FRAC:0.98,       // max quad area as fraction of canvas area
+  SCORE_W_EDGE:0.55,
+  SCORE_W_ASPECT:0.30,
+  SCORE_W_AREA:0.15,
+  EDGE_SUPPORT_SAMPLES_PER_SIDE:40, // sample points per quad side for edge-support scoring
+  EDGE_SUPPORT_RADIUS:3,          // px radius (in work-canvas space) to search for an edge hit
+  CARD_ASPECT_TARGET:0.716,       // short/long side ratio of a standard trading card
+  CARD_ASPECT_TOL:0.20,           // aspectPrior falls to 0 once |ratio diff| reaches this
+  IOU_GRID:20,                    // grid size (NxN) used to approximate IoU between two quads
+  IOU_REJECT_THRESH:0.15,          // candidates with IoU >= this vs. an already-kept quad are dropped
+  MAX_KEPT_CANDIDATES:6,
+  MIN_KEPT_SCORE:0.45,
+  MULTI_SCORE_GATE:0.12,           // multi-card path: drop candidates scoring below (best - this)
+  MULTI_AREA_RATIO_MIN:0.5,        // multi-card path: drop candidates smaller than this fraction of the best candidate's area — kills small graphic/logo-fragment false positives without touching real same-size cards in a grid
+  NESTED_AREA_RATIO_MIN:0.30,
+  NESTED_AREA_RATIO_MAX:0.80,
+  NESTED_MAX_ITERS:5,
+  SLAB_DESCENT_MIN_EDGE:0.5,       // min cvEdgeSupport for a candidate nested quad to be trusted as a real physical edge (see cvAttemptSlabDescent)
+  SLAB_DESCENT_ASPECT_GAIN:0.15,   // nested quad must beat its container's cvAspectPrior by this much to justify descending (slab window is taller than card ratio; a bare card already is card ratio)
+  RECT_W:480, RECT_H:672,          // rectified-card working canvas size for inner-frame detection
+  INNER_BAND_MIN_FRAC:0.015,       // inner-frame scan band start, fraction of relevant dimension
+  INNER_BAND_MAX_FRAC:0.16,        // inner-frame scan band end, fraction of relevant dimension
+  INNER_PERP_MIN_FRAC:0.18,        // perpendicular sampling range start (skip corners)
+  INNER_PERP_MAX_FRAC:0.82,        // perpendicular sampling range end (skip corners)
+  INNER_PROM_MIN:1.2,               // prominence (peak/bandmean) mapped to innerScore=0
+  INNER_PROM_RANGE:3,               // prominence range mapped to innerScore 0..1
+  ONE_CARD_SCORE_THRESH:0.55,       // score threshold to auto-place a single detected card
+  NO_CARD_SCORE_THRESH:0.45,        // below this (all candidates), report "no card detected"
+  INNER_UNCERTAIN_THRESH:0.35,      // innerScore below this triggers the "uncertain" toast
+};
+
+function cvGrayscale(ctx,w,h){
+  const data=ctx.getImageData(0,0,w,h).data;
+  const g=new Float32Array(w*h);
+  for(let i=0,p=0;i<data.length;i+=4,p++){
+    g[p]=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
+  }
+  return g;
+}
+function cvBoxBlur3(src,w,h){
+  const out=new Float32Array(w*h);
+  const clampX=x=>x<0?0:(x>=w?w-1:x);
+  const clampY=y=>y<0?0:(y>=h?h-1:y);
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      let sum=0;
+      for(let dy=-1;dy<=1;dy++){
+        const yy=clampY(y+dy);
+        for(let dx=-1;dx<=1;dx++){
+          sum+=src[yy*w+clampX(x+dx)];
+        }
+      }
+      out[y*w+x]=sum/9;
+    }
+  }
+  return out;
+}
+function cvSobel(src,w,h){
+  const gx=new Float32Array(w*h), gy=new Float32Array(w*h);
+  const clampX=x=>x<0?0:(x>=w?w-1:x);
+  const clampY=y=>y<0?0:(y>=h?h-1:y);
+  const KX=[-1,0,1,-2,0,2,-1,0,1], KY=[-1,-2,-1,0,0,0,1,2,1];
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      let sx=0,sy=0,k=0;
+      for(let dy=-1;dy<=1;dy++){
+        const yy=clampY(y+dy);
+        for(let dx=-1;dx<=1;dx++){
+          const v=src[yy*w+clampX(x+dx)];
+          sx+=v*KX[k]; sy+=v*KY[k]; k++;
+        }
+      }
+      gx[y*w+x]=sx; gy[y*w+x]=sy;
+    }
+  }
+  return {gx,gy};
+}
+function cvPercentileThreshold(mag,pct,bins){
+  let mn=Infinity,mx=-Infinity;
+  for(let i=0;i<mag.length;i++){ const v=mag[i]; if(v<mn)mn=v; if(v>mx)mx=v; }
+  if(mx<=mn) return mx;
+  const hist=new Uint32Array(bins);
+  const scale=bins/(mx-mn);
+  for(let i=0;i<mag.length;i++){
+    let b=((mag[i]-mn)*scale)|0;
+    if(b>=bins)b=bins-1; if(b<0)b=0;
+    hist[b]++;
+  }
+  const total=mag.length, target=total*pct;
+  let cum=0;
+  for(let b=0;b<bins;b++){
+    cum+=hist[b];
+    if(cum>=target) return mn+(b+1)*(mx-mn)/bins;
+  }
+  return mx;
+}
+function cvDilate3(edge,w,h){
+  const out=new Uint8Array(w*h);
+  const clampX=x=>x<0?0:(x>=w?w-1:x);
+  const clampY=y=>y<0?0:(y>=h?h-1:y);
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      let hit=0;
+      for(let dy=-1;dy<=1&&!hit;dy++){
+        const yy=clampY(y+dy);
+        for(let dx=-1;dx<=1;dx++){
+          if(edge[yy*w+clampX(x+dx)]){ hit=1; break; }
+        }
+      }
+      out[y*w+x]=hit;
+    }
+  }
+  return out;
+}
+// Hough transform: theta in [0,180) deg, rho in [-diag,diag]. Returns list of {rho,theta,votes}.
+function cvHoughLines(edge,w,h){
+  const thetaStep=CV.HOUGH_THETA_STEP_DEG*Math.PI/180;
+  const nTheta=Math.round(180/CV.HOUGH_THETA_STEP_DEG);
+  const diag=Math.sqrt(w*w+h*h);
+  const rhoStep=CV.HOUGH_RHO_STEP;
+  const nRho=Math.ceil((2*diag)/rhoStep)+1;
+  const rhoOff=Math.floor(nRho/2);
+  const cosT=new Float32Array(nTheta), sinT=new Float32Array(nTheta);
+  for(let t=0;t<nTheta;t++){ const a=t*thetaStep; cosT[t]=Math.cos(a); sinT[t]=Math.sin(a); }
+  const acc=new Uint32Array(nTheta*nRho);
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      if(!edge[y*w+x]) continue;
+      for(let t=0;t<nTheta;t++){
+        const rho=x*cosT[t]+y*sinT[t];
+        let r=Math.round(rho/rhoStep)+rhoOff;
+        if(r<0)r=0; if(r>=nRho)r=nRho-1;
+        acc[t*nRho+r]++;
+      }
+    }
+  }
+  // non-max suppression in a HOUGH_NMS_WIN x HOUGH_NMS_WIN window
+  const win=Math.floor(CV.HOUGH_NMS_WIN/2);
+  const peaks=[];
+  let maxVotes=0;
+  for(let i=0;i<acc.length;i++) if(acc[i]>maxVotes) maxVotes=acc[i];
+  if(maxVotes<=0) return [];
+  const minVotes=maxVotes*CV.HOUGH_PEAK_VOTE_FRAC;
+  for(let t=0;t<nTheta;t++){
+    for(let r=0;r<nRho;r++){
+      const v=acc[t*nRho+r];
+      if(v<minVotes) continue;
+      let isMax=true;
+      for(let dt=-win;dt<=win&&isMax;dt++){
+        const tt=t+dt; if(tt<0||tt>=nTheta) continue;
+        for(let dr=-win;dr<=win;dr++){
+          const rr=r+dr; if(rr<0||rr>=nRho) continue;
+          if(dt===0&&dr===0) continue;
+          if(acc[tt*nRho+rr]>v){ isMax=false; break; }
+        }
+      }
+      if(isMax) peaks.push({rho:(r-rhoOff)*rhoStep,theta:t*thetaStep,thetaDeg:t*CV.HOUGH_THETA_STEP_DEG,votes:v});
+    }
+  }
+  peaks.sort((a,b)=>b.votes-a.votes);
+  return peaks.slice(0,CV.HOUGH_TOP_PEAKS);
+}
+// circular distance between two angles in degrees, mod 180
+function cvAngDist180(a,b){
+  let d=Math.abs(a-b)%180;
+  if(d>90) d=180-d;
+  return d;
+}
+// Cluster lines into two dominant angle families ~65-115deg apart.
+function cvClusterAngleFamilies(lines){
+  const hist=new Float64Array(CV.ANGLE_HIST_BINS);
+  lines.forEach(l=>{
+    let b=Math.round(l.thetaDeg)%CV.ANGLE_HIST_BINS;
+    hist[b]+=l.votes;
+  });
+  // smooth slightly to stabilize peak picking
+  const sm=new Float64Array(CV.ANGLE_HIST_BINS);
+  for(let i=0;i<CV.ANGLE_HIST_BINS;i++){
+    sm[i]=(hist[(i-1+CV.ANGLE_HIST_BINS)%CV.ANGLE_HIST_BINS]+hist[i]*2+hist[(i+1)%CV.ANGLE_HIST_BINS])/4;
+  }
+  let bestI=-1,bestV=-1;
+  for(let i=0;i<CV.ANGLE_HIST_BINS;i++) if(sm[i]>bestV){bestV=sm[i];bestI=i;}
+  if(bestI<0) return null;
+  let bestJ=-1,bestJV=-1;
+  for(let j=0;j<CV.ANGLE_HIST_BINS;j++){
+    const sep=cvAngDist180(j,bestI);
+    if(sep<CV.ANGLE_FAMILY_MIN_SEP_DEG||sep>CV.ANGLE_FAMILY_MAX_SEP_DEG) continue;
+    if(sm[j]>bestJV){bestJV=sm[j];bestJ=j;}
+  }
+  if(bestJ<0) return null;
+  const cA=bestI,cB=bestJ;
+  const famA=[],famB=[];
+  lines.forEach(l=>{
+    const dA=cvAngDist180(l.thetaDeg,cA), dB=cvAngDist180(l.thetaDeg,cB);
+    const d=Math.min(dA,dB);
+    if(d>CV.ANGLE_FAMILY_TOL_DEG) return;
+    (dA<=dB?famA:famB).push(l);
+  });
+  famA.sort((a,b)=>b.votes-a.votes);
+  famB.sort((a,b)=>b.votes-a.votes);
+  return {famA:famA.slice(0,CV.FAMILY_MAX_LINES),famB:famB.slice(0,CV.FAMILY_MAX_LINES)};
+}
+// intersection of two (rho,theta) lines -> {x,y} or null if parallel
+function cvLineIntersect(l1,l2){
+  const c1=Math.cos(l1.theta),s1=Math.sin(l1.theta);
+  const c2=Math.cos(l2.theta),s2=Math.sin(l2.theta);
+  const det=c1*s2-c2*s1;
+  if(Math.abs(det)<1e-9) return null;
+  const x=(s2*l1.rho-s1*l2.rho)/det;
+  const y=(c1*l2.rho-c2*l1.rho)/det;
+  return {x,y};
+}
+function cvPolyArea(p){
+  let a=0;
+  for(let k=0;k<p.length;k++){ const q=p[(k+1)%p.length]; a+=p[k].x*q.y-q.x*p[k].y; }
+  return Math.abs(a)/2;
+}
+function cvOrderByAngleAroundCentroid(pts){
+  const c={x:pts.reduce((s,p)=>s+p.x,0)/pts.length,y:pts.reduce((s,p)=>s+p.y,0)/pts.length};
+  return pts.map(p=>({p,a:Math.atan2(p.y-c.y,p.x-c.x)})).sort((a,b)=>a.a-b.a).map(o=>o.p);
+}
+// Normalize a simple-polygon quad to TL,TR,BR,BL order (min x+y corner = TL, then walk winding order).
+function cvNormalizeQuadOrder(quad){
+  const ordered=cvOrderByAngleAroundCentroid(quad);
+  let tlIdx=0,best=Infinity;
+  for(let i=0;i<4;i++){ const s=ordered[i].x+ordered[i].y; if(s<best){best=s;tlIdx=i;} }
+  const rotated=[]; for(let i=0;i<4;i++) rotated.push(ordered[(tlIdx+i)%4]);
+  return rotated;
+}
+function cvQuadFromLinePair(a1,a2,b1,b2){
+  const p1=cvLineIntersect(a1,b1), p2=cvLineIntersect(a1,b2);
+  const p3=cvLineIntersect(a2,b2), p4=cvLineIntersect(a2,b1);
+  if(!p1||!p2||!p3||!p4) return null;
+  return cvNormalizeQuadOrder(cvOrderByAngleAroundCentroid([p1,p2,p3,p4]));
+}
+function cvEdgeSupport(quad,edgeMap,w,h){
+  const N=CV.EDGE_SUPPORT_SAMPLES_PER_SIDE, R=CV.EDGE_SUPPORT_RADIUS;
+  let hits=0,total=0;
+  for(let s=0;s<4;s++){
+    const a=quad[s], b=quad[(s+1)%4];
+    for(let k=0;k<N;k++){
+      const t=(k+0.5)/N;
+      const x=a.x+(b.x-a.x)*t, y=a.y+(b.y-a.y)*t;
+      total++;
+      let hit=false;
+      const x0=Math.max(0,Math.floor(x-R)), x1=Math.min(w-1,Math.ceil(x+R));
+      const y0=Math.max(0,Math.floor(y-R)), y1=Math.min(h-1,Math.ceil(y+R));
+      for(let yy=y0;yy<=y1&&!hit;yy++){
+        for(let xx=x0;xx<=x1;xx++){
+          if((xx-x)*(xx-x)+(yy-y)*(yy-y)<=R*R && edgeMap[yy*w+xx]){ hit=true; break; }
+        }
+      }
+      if(hit) hits++;
+    }
+  }
+  return total?hits/total:0;
+}
+function cvQuadWH(quad){
+  // two side-pairs: (0-1,3-2) and (1-2,0-3)
+  const s01=Math.hypot(quad[1].x-quad[0].x,quad[1].y-quad[0].y);
+  const s32=Math.hypot(quad[2].x-quad[3].x,quad[2].y-quad[3].y);
+  const s12=Math.hypot(quad[2].x-quad[1].x,quad[2].y-quad[1].y);
+  const s03=Math.hypot(quad[3].x-quad[0].x,quad[3].y-quad[0].y);
+  return {w:(s01+s32)/2,h:(s12+s03)/2};
+}
+function cvAspectPrior(quad){
+  const {w,h}=cvQuadWH(quad);
+  if(w<=0||h<=0) return 0;
+  const r=w/h;
+  const d1=Math.abs(r-CV.CARD_ASPECT_TARGET);
+  const d2=Math.abs(1/r-CV.CARD_ASPECT_TARGET);
+  const d=Math.min(d1,d2);
+  return Math.max(0,1-d/CV.CARD_ASPECT_TOL);
+}
+function cvScoreQuad(quad,edgeMap,w,h,canvasArea){
+  const edgeSupport=cvEdgeSupport(quad,edgeMap,w,h);
+  const aspectPrior=cvAspectPrior(quad);
+  const area=cvPolyArea(quad);
+  const areaNorm=Math.sqrt(Math.max(0,area/canvasArea));
+  const score=CV.SCORE_W_EDGE*edgeSupport+CV.SCORE_W_ASPECT*aspectPrior+CV.SCORE_W_AREA*areaNorm;
+  return {score,edgeSupport,aspectPrior,areaNorm,area};
+}
+function cvFindQuadCandidates(lines,edgeMap,w,h){
+  const fam=cvClusterAngleFamilies(lines);
+  if(!fam) return [];
+  const {famA,famB}=fam;
+  const minDim=Math.min(w,h);
+  const rhoGap=CV.MIN_LINE_PAIR_RHO_GAP_FRAC*minDim;
+  const oobLimit=CV.QUAD_MAX_OOB_FRAC*minDim;
+  const canvasArea=w*h;
+  const minArea=CV.QUAD_MIN_AREA_FRAC*canvasArea, maxArea=CV.QUAD_MAX_AREA_FRAC*canvasArea;
+  const candidates=[];
+  for(let i=0;i<famA.length;i++){
+    for(let j=i+1;j<famA.length;j++){
+      const a1=famA[i],a2=famA[j];
+      if(Math.abs(a1.rho-a2.rho)<rhoGap) continue;
+      for(let p=0;p<famB.length;p++){
+        for(let q=p+1;q<famB.length;q++){
+          const b1=famB[p],b2=famB[q];
+          if(Math.abs(b1.rho-b2.rho)<rhoGap) continue;
+          const quad=cvQuadFromLinePair(a1,a2,b1,b2);
+          if(!quad) continue;
+          if(!isProperQuad(quad)) continue;
+          let oob=false;
+          for(const c of quad){
+            if(c.x<-oobLimit||c.y<-oobLimit||c.x>w+oobLimit||c.y>h+oobLimit){ oob=true; break; }
+          }
+          if(oob) continue;
+          const area=cvPolyArea(quad);
+          if(area<minArea||area>maxArea) continue;
+          const sc=cvScoreQuad(quad,edgeMap,w,h,canvasArea);
+          candidates.push({quad,...sc});
+        }
+      }
+    }
+  }
+  return candidates;
+}
+// approximate IoU between two quads via a 20x20 grid sampled over their combined bbox
+function cvApproxIoU(qA,qB){
+  const xs=[...qA,...qB].map(p=>p.x), ys=[...qA,...qB].map(p=>p.y);
+  const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+  if(x1<=x0||y1<=y0) return 0;
+  const N=CV.IOU_GRID;
+  let inter=0,union=0;
+  for(let gy=0;gy<N;gy++){
+    for(let gx=0;gx<N;gx++){
+      const x=x0+(gx+0.5)/N*(x1-x0), y=y0+(gy+0.5)/N*(y1-y0);
+      const inA=pointInQuad({x,y},qA), inB=pointInQuad({x,y},qB);
+      if(inA||inB) union++;
+      if(inA&&inB) inter++;
+    }
+  }
+  return union?inter/union:0;
+}
+function cvSelectCandidates(scored){
+  const sorted=scored.slice().sort((a,b)=>b.score-a.score);
+  const kept=[];
+  for(const c of sorted){
+    if(kept.length>=CV.MAX_KEPT_CANDIDATES) break;
+    if(c.score<CV.MIN_KEPT_SCORE) continue;
+    let overlaps=false;
+    for(const k of kept){ if(cvApproxIoU(c.quad,k.quad)>=CV.IOU_REJECT_THRESH){ overlaps=true; break; } }
+    if(overlaps) continue;
+    kept.push(c);
+  }
+  // Nested-quad rule: replace a kept "slab/sleeve" outline with a genuine nested card if found.
+  for(let iter=0;iter<CV.NESTED_MAX_ITERS;iter++){
+    let replaced=false;
+    for(let ki=0;ki<kept.length;ki++){
+      const A=kept[ki];
+      let best=null;
+      for(const B of scored){
+        if(B===A) continue;
+        const allIn=B.quad.every(pt=>pointInQuad(pt,A.quad));
+        if(!allIn) continue;
+        const ratio=B.area/A.area;
+        if(ratio<CV.NESTED_AREA_RATIO_MIN||ratio>CV.NESTED_AREA_RATIO_MAX) continue;
+        if(B.aspectPrior<A.aspectPrior) continue;
+        if(!best||B.score>best.score) best=B;
+      }
+      if(best){ kept[ki]=best; replaced=true; }
+    }
+    if(!replaced) break;
+  }
+  return kept;
+}
+// Rectify outerQuad to RECT_W x RECT_H grayscale, find the inner printed frame via
+// gradient-prominence scanning on each side, return inner quad in the SAME source
+// coordinate space as outerQuad (i.e. mapped back through the homography).
+function cvDetectInnerFrame(gray,w,h,outerQuad){
+  const RW=CV.RECT_W, RH=CV.RECT_H;
+  const rect=[{x:0,y:0},{x:RW,y:0},{x:RW,y:RH},{x:0,y:RH}];
+  const Hd2s=homography(rect,outerQuad); // rect -> source(work canvas)
+  const rectified=new Float32Array(RW*RH);
+  for(let dy=0;dy<RH;dy++){
+    for(let dx=0;dx<RW;dx++){
+      const sp=applyH(Hd2s,dx+0.5,dy+0.5);
+      let sx=Math.round(sp.x), sy=Math.round(sp.y);
+      if(sx<0)sx=0; if(sx>=w)sx=w-1;
+      if(sy<0)sy=0; if(sy>=h)sy=h-1;
+      rectified[dy*RW+dx]=gray[sy*w+sx];
+    }
+  }
+  const {gx,gy}=cvSobel(rectified,RW,RH);
+  const bandMin=CV.INNER_BAND_MIN_FRAC, bandMax=CV.INNER_BAND_MAX_FRAC;
+  const perpMin=CV.INNER_PERP_MIN_FRAC, perpMax=CV.INNER_PERP_MAX_FRAC;
+
+  function scanVertical(colFrom,colTo){ // returns {x:subpixel col, prom}
+    const rowLo=Math.round(perpMin*RH), rowHi=Math.round(perpMax*RH);
+    let bestX=colFrom, bestMean=-Infinity;
+    const means=[];
+    const xLo=Math.min(colFrom,colTo), xHi=Math.max(colFrom,colTo);
+    for(let x=xLo;x<=xHi;x++){
+      let sum=0,n=0;
+      for(let y=rowLo;y<=rowHi;y++){ sum+=Math.abs(gx[y*RW+x]); n++; }
+      const m=n?sum/n:0;
+      means.push(m);
+      if(m>bestMean){ bestMean=m; bestX=x; }
+    }
+    const bandMean=means.reduce((s,v)=>s+v,0)/(means.length||1);
+    // sub-pixel parabola refine using neighbors in the sampled band
+    let sub=bestX;
+    const idx=bestX-xLo;
+    if(idx>0&&idx<means.length-1){
+      const y0=means[idx-1],y1=means[idx],y2=means[idx+1];
+      const denom=(y0-2*y1+y2);
+      if(Math.abs(denom)>1e-9){ const off=0.5*(y0-y2)/denom; sub=bestX+Math.max(-1,Math.min(1,off)); }
+    }
+    const prom=bandMean>1e-6?bestMean/bandMean:1;
+    return {x:sub,prom};
+  }
+  function scanHorizontal(rowFrom,rowTo){ // returns {y:subpixel row, prom}
+    const colLo=Math.round(perpMin*RW), colHi=Math.round(perpMax*RW);
+    let bestY=rowFrom, bestMean=-Infinity;
+    const means=[];
+    const yLo=Math.min(rowFrom,rowTo), yHi=Math.max(rowFrom,rowTo);
+    for(let y=yLo;y<=yHi;y++){
+      let sum=0,n=0;
+      for(let x=colLo;x<=colHi;x++){ sum+=Math.abs(gy[y*RW+x]); n++; }
+      const m=n?sum/n:0;
+      means.push(m);
+      if(m>bestMean){ bestMean=m; bestY=y; }
+    }
+    const bandMean=means.reduce((s,v)=>s+v,0)/(means.length||1);
+    let sub=bestY;
+    const idx=bestY-yLo;
+    if(idx>0&&idx<means.length-1){
+      const y0=means[idx-1],y1=means[idx],y2=means[idx+1];
+      const denom=(y0-2*y1+y2);
+      if(Math.abs(denom)>1e-9){ const off=0.5*(y0-y2)/denom; sub=bestY+Math.max(-1,Math.min(1,off)); }
+    }
+    const prom=bandMean>1e-6?bestMean/bandMean:1;
+    return {y:sub,prom};
+  }
+
+  const left=scanVertical(Math.round(bandMin*RW),Math.round(bandMax*RW));
+  const right=scanVertical(Math.round((1-bandMax)*RW),Math.round((1-bandMin)*RW));
+  const top=scanHorizontal(Math.round(bandMin*RH),Math.round(bandMax*RH));
+  const bottom=scanHorizontal(Math.round((1-bandMax)*RH),Math.round((1-bandMin)*RH));
+
+  const xL=left.x, xR=right.x, yT=top.y, yB=bottom.y;
+  const rectInner=[{x:xL,y:yT},{x:xR,y:yT},{x:xR,y:yB},{x:xL,y:yB}];
+  const innerQuad=rectInner.map(p=>applyH(Hd2s,p.x,p.y));
+  const proms=[left.prom,right.prom,top.prom,bottom.prom];
+  const mapped=proms.map(p=>Math.max(0,Math.min(1,(p-CV.INNER_PROM_MIN)/CV.INNER_PROM_RANGE)));
+  const innerScore=Math.min(...mapped);
+  return {innerQuad,innerScore};
+}
+// Slab handling: a graded-card slab photo fools the pipeline above into finding the plastic
+// case/window as "outer" and the card's own physical edge as "inner" — the pipeline DID find
+// the card edge, it's just holding the wrong role. Detect that pattern and descend: treat the
+// found "inner" as the real outer and search one level deeper for the printed frame.
+// The discriminating signal is SHAPE: a slab window (card + white label above it) is markedly
+// taller than the 63x88 card ratio, while a bare card's outer quad already IS card-shaped. So we
+// only descend while the nested quad is a clearly better card shape than the quad holding it
+// (cvAspectPrior gain >= SLAB_DESCENT_ASPECT_GAIN). Inner-frame scores can NOT discriminate:
+// measured on the test set, a real printed frame scores 0.02-0.13 — same range as the garbage
+// found one level too deep. Area ratio stays as a loose sanity gate (NESTED_AREA_RATIO_*), and
+// the loop is bounded by NESTED_MAX_ITERS so a slab outer shell -> window -> card chain resolves
+// in two steps and stops at the card (card vs printed frame shows no aspect gain).
+function cvAttemptSlabDescent(gray,edgeMap,w,h,outerQuad,innerQuad,innerScore){
+  const outerArea=cvPolyArea(outerQuad);
+  let ratio=outerArea>0?cvPolyArea(innerQuad)/outerArea:1;
+  let curOuter=outerQuad,curInner=innerQuad,curScore=innerScore,descended=false;
+  for(let iter=0;iter<CV.NESTED_MAX_ITERS;iter++){
+    if(ratio<CV.NESTED_AREA_RATIO_MIN||ratio>CV.NESTED_AREA_RATIO_MAX) break;
+    const edgeSupport=cvEdgeSupport(curInner,edgeMap,w,h);
+    const pOuter=cvAspectPrior(curOuter), pInner=cvAspectPrior(curInner);
+    if(window.CV_DEBUG) console.log(`[CV_DEBUG]   slab-iter${iter} ratio=${ratio.toFixed(3)} edgeSupport=${edgeSupport.toFixed(3)} aspectPrior outer=${pOuter.toFixed(3)} inner=${pInner.toFixed(3)}`);
+    if(edgeSupport<CV.SLAB_DESCENT_MIN_EDGE) break;
+    if(pInner<pOuter+CV.SLAB_DESCENT_ASPECT_GAIN) break;
+    const {innerQuad:nextInner,innerScore:nextScore}=cvDetectInnerFrame(gray,w,h,curInner);
+    ratio=cvPolyArea(nextInner)/cvPolyArea(curInner);
+    curOuter=curInner; curInner=nextInner; curScore=nextScore; descended=true;
+    if(window.CV_DEBUG) console.log(`[CV_DEBUG]   slab-iter${iter} descended nextScore=${nextScore.toFixed(3)} nextRatio=${ratio.toFixed(3)}`);
+  }
+  if(!descended) return {outer:outerQuad,inner:innerQuad,innerScore,slab:false};
+  return {outer:curOuter,inner:curInner,innerScore:curScore,slab:true};
+}
+// ---------- Threshold-based candidate generator (Otsu connected components) ----------
+// Second candidate pool for autoDetect: catches busy backgrounds / low-contrast edges
+// where the Hough line pipeline finds no usable lines. Quads are scored with the SAME
+// cvScoreQuad as the Hough candidates so both pools merge into one ranked list.
+function cvOtsu(chan){
+  const hist=new Array(256).fill(0);
+  for(let i=0;i<chan.length;i++) hist[chan[i]]++;
+  const total=chan.length;
+  let sum=0; for(let i=0;i<256;i++) sum+=i*hist[i];
+  let sumB=0,wB=0,best=0,thr=127;
+  for(let i=0;i<256;i++){
+    wB+=hist[i]; if(!wB) continue;
+    const wF=total-wB; if(!wF) break;
+    sumB+=i*hist[i];
+    const mB=sumB/wB, mF=(sum-sumB)/wF, v=wB*wF*(mB-mF)*(mB-mF);
+    if(v>best){best=v;thr=i;}
+  }
+  return thr;
+}
+function cvComponents(bin,w,h,minCount){
+  const label=new Int32Array(w*h).fill(-1);
+  const out=[]; let id=0;
+  const stack=new Int32Array(w*h);
+  for(let s=0;s<w*h;s++){
+    if(bin[s]!==1||label[s]!==-1) continue;
+    let top=0,count=0; stack[top++]=s; label[s]=id;
+    const pxs=[];
+    while(top){
+      const p=stack[--top]; count++; pxs.push(p);
+      const x=p%w,y=(p/w)|0;
+      if(x>0&&bin[p-1]===1&&label[p-1]===-1){label[p-1]=id;stack[top++]=p-1;}
+      if(x<w-1&&bin[p+1]===1&&label[p+1]===-1){label[p+1]=id;stack[top++]=p+1;}
+      if(y>0&&bin[p-w]===1&&label[p-w]===-1){label[p-w]=id;stack[top++]=p-w;}
+      if(y<h-1&&bin[p+w]===1&&label[p+w]===-1){label[p+w]=id;stack[top++]=p+w;}
+    }
+    if(count>=minCount){
+      const mask=new Uint8Array(w*h);
+      for(const p of pxs) mask[p]=1;
+      out.push({mask,count});
+    }
+    id++;
+  }
+  out.sort((a,b)=>b.count-a.count);
+  return out;
+}
+function cvBoundaryPoints(mask,w,h){
+  const pts=[];
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++) if(mask[y*w+x]){
+    if(x===0||y===0||x===w-1||y===h-1||!mask[y*w+x-1]||!mask[y*w+x+1]||!mask[(y-1)*w+x]||!mask[(y+1)*w+x]) pts.push({x,y});
+  }
+  return pts;
+}
+function cvConvexHull(pts){
+  pts=pts.slice().sort((a,b)=>a.x-b.x||a.y-b.y);
+  const cr=(o,a,b)=>(a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);
+  const lo=[],up=[];
+  for(const p of pts){ while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0) lo.pop(); lo.push(p); }
+  for(let i=pts.length-1;i>=0;i--){ const p=pts[i]; while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0) up.pop(); up.push(p); }
+  lo.pop(); up.pop();
+  return lo.concat(up);
+}
+function cvMinAreaRect(hu){
+  let best=null;
+  for(let i=0;i<hu.length;i++){
+    const p1=hu[i],p2=hu[(i+1)%hu.length];
+    const dx=p2.x-p1.x,dy=p2.y-p1.y,ln=Math.hypot(dx,dy);
+    if(ln<1e-9) continue;
+    const ux=dx/ln,uy=dy/ln;
+    let minU=1e18,maxU=-1e18,minV=1e18,maxV=-1e18;
+    for(const q of hu){
+      const u=q.x*ux+q.y*uy, v=-q.x*uy+q.y*ux;
+      if(u<minU)minU=u; if(u>maxU)maxU=u; if(v<minV)minV=v; if(v>maxV)maxV=v;
+    }
+    const area=(maxU-minU)*(maxV-minV);
+    if(!best||area<best.area){
+      const corners=[[minU,minV],[maxU,minV],[maxU,maxV],[minU,maxV]].map(([u,v])=>({x:u*ux-v*uy,y:u*uy+v*ux}));
+      best={area,c:corners};
+    }
+  }
+  return best.c;
+}
+function cvOrderCorners(c){
+  const bySum=c.slice().sort((a,b)=>(a.x+a.y)-(b.x+b.y));
+  const byDiff=c.slice().sort((a,b)=>(a.x-a.y)-(b.x-b.y));
+  return [bySum[0], byDiff[3], bySum[3], byDiff[0]];
+}
+function cvThresholdQuadCandidates(data,w,h){
+  const lum=new Uint8Array(w*h), mxc=new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++){
+    const r=data[i*4],g=data[i*4+1],b=data[i*4+2];
+    lum[i]=(r*0.299+g*0.587+b*0.114)|0;
+    mxc[i]=Math.max(r,g,b);
+  }
+  const cands=[];
+  for(const chan of [lum,mxc]){
+    const t=cvOtsu(chan);
+    const thresholds=[...new Set([t, Math.round(t*0.72), Math.round(t*0.5)].map(v=>Math.max(30,v)))];
+    for(const thr of thresholds){
+      const bin=new Uint8Array(w*h);
+      for(let i=0;i<w*h;i++) bin[i]=chan[i]>thr?1:0;
+      const comps=cvComponents(bin,w,h,Math.round(w*h*0.02));
+      for(const comp of comps.slice(0,10)){
+        const pts=cvBoundaryPoints(comp.mask,w,h);
+        if(pts.length<20) continue;
+        const rect=cvMinAreaRect(cvConvexHull(pts));
+        const e1=Math.hypot(rect[1].x-rect[0].x,rect[1].y-rect[0].y);
+        const e2=Math.hypot(rect[2].x-rect[1].x,rect[2].y-rect[1].y);
+        const long=Math.max(e1,e2), short=Math.min(e1,e2);
+        const aspect=long/(short||1), fill=comp.count/(e1*e2||1);
+        if(aspect<1.05||aspect>1.9||fill<0.42) continue;
+        cands.push({quad:cvOrderCorners(rect)});
+      }
+    }
+  }
+  return cands;
+}
+async function autoDetect(imgEl,opts={}){
+  const natW=imgEl.naturalWidth||imgEl.width, natH=imgEl.naturalHeight||imgEl.height;
+  if(!natW||!natH) return {cards:[],workScale:1};
+  let k=CV.MAX_DIM/Math.max(natW,natH);
+  if(k>1) k=1;
+  const w=Math.max(1,Math.round(natW*k)), h=Math.max(1,Math.round(natH*k));
+  const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+  const ctx=cv.getContext("2d",{willReadFrequently:true});
+  ctx.drawImage(imgEl,0,0,w,h);
+
+  let gray=cvGrayscale(ctx,w,h);
+  for(let i=0;i<CV.BLUR_PASSES;i++) gray=cvBoxBlur3(gray,w,h);
+  const {gx,gy}=cvSobel(gray,w,h);
+  const mag=new Float32Array(w*h);
+  for(let i=0;i<mag.length;i++) mag[i]=Math.sqrt(gx[i]*gx[i]+gy[i]*gy[i]);
+  const thresh=cvPercentileThreshold(mag,CV.EDGE_PERCENTILE,CV.HIST_BINS);
+  let edge=new Uint8Array(w*h);
+  for(let i=0;i<mag.length;i++) edge[i]=mag[i]>=thresh?1:0;
+  edge=cvDilate3(edge,w,h);
+
+  const lines=cvHoughLines(edge,w,h);
+  const houghScored=lines.length?cvFindQuadCandidates(lines,edge,w,h):[];
+  const canvasArea=w*h;
+  const thrScored=cvThresholdQuadCandidates(ctx.getImageData(0,0,w,h).data,w,h)
+    .filter(c=>isProperQuad(c.quad))
+    .map(c=>({quad:c.quad,...cvScoreQuad(c.quad,edge,w,h,canvasArea)}));
+  const kept=cvSelectCandidates(houghScored.concat(thrScored));
+  if(window.CV_DEBUG){
+    const q2s=q=>q.map(p=>`(${p.x.toFixed(0)},${p.y.toFixed(0)})`).join(" ");
+    console.log(`[CV_DEBUG] hough=${houghScored.length} thr=${thrScored.length} kept=${kept.length} (w=${w} h=${h} minDim=${Math.min(w,h)})`);
+    kept.forEach((c,i)=>console.log(`[CV_DEBUG] kept[${i}] score=${c.score.toFixed(3)} edge=${c.edgeSupport.toFixed(3)} aspect=${c.aspectPrior.toFixed(3)} areaNorm=${c.areaNorm.toFixed(3)} areaFrac=${(c.areaNorm*c.areaNorm).toFixed(3)} quad=${q2s(c.quad)}`));
+    for(let i=0;i<kept.length;i++) for(let j=i+1;j<kept.length;j++) console.log(`[CV_DEBUG] IoU(${i},${j})=${cvApproxIoU(kept[i].quad,kept[j].quad).toFixed(3)}`);
+  }
+
+  const cards=kept.map(c=>{
+    const {innerQuad,innerScore}=cvDetectInnerFrame(gray,w,h,c.quad);
+    const desc=cvAttemptSlabDescent(gray,edge,w,h,c.quad,innerQuad,innerScore);
+    const outerFull=desc.outer.map(p=>({x:p.x/k,y:p.y/k}));
+    const innerFull=desc.inner.map(p=>({x:p.x/k,y:p.y/k}));
+    return {outer:outerFull,inner:innerFull,score:c.score,innerScore:desc.innerScore,slab:desc.slab};
+  });
+  cards.sort((a,b)=>b.score-a.score);
+  return {cards,workScale:k};
+}
+function clearCandidates(){
+  state.candidates=null;
+  const g=$("candidateLayer");
+  if(g) g.remove();
+}
+function applyDetectedCard(card){
+  const s=S();
+  if(state.rectView) exitRectView();
+  s.outer=card.outer.map(p=>({x:p.x,y:p.y}));
+  s.inner=card.inner.map(p=>({x:p.x,y:p.y}));
+  s.result=null; s.warp=null; s.rect=null;
+}
+function drawCandidateOutlines(cards){
+  clearCandidates();
+  const g=el("g"); g.id="candidateLayer";
+  cards.forEach((card,i)=>{
+    const poly=el("polygon");
+    poly.setAttribute("points",card.outer.map(p=>`${p.x},${p.y}`).join(" "));
+    poly.setAttribute("fill","#a78bfa");
+    poly.setAttribute("fill-opacity","0.18");
+    poly.setAttribute("stroke","#a78bfa");
+    poly.setAttribute("stroke-width",px(3));
+    poly.style.cursor="pointer";
+    poly.addEventListener("click",e=>{
+      e.stopPropagation();
+      applyDetectedCard(card);
+      clearCandidates();
+      updateUI();
+    });
+    const cx=card.outer.reduce((s,p)=>s+p.x,0)/4, cy=card.outer.reduce((s,p)=>s+p.y,0)/4;
+    const lbl=el("text");
+    lbl.textContent=`Card ${i+1}`;
+    lbl.setAttribute("x",cx); lbl.setAttribute("y",cy);
+    lbl.setAttribute("fill","#fff"); lbl.setAttribute("font-size",px(20)); lbl.setAttribute("font-weight","800");
+    lbl.setAttribute("text-anchor","middle"); lbl.setAttribute("dominant-baseline","middle");
+    lbl.setAttribute("paint-order","stroke"); lbl.setAttribute("stroke","rgba(0,0,0,.75)"); lbl.setAttribute("stroke-width",px(4));
+    lbl.style.cursor="pointer"; lbl.style.pointerEvents="none";
+    g.append(poly,lbl);
+  });
+  ov.appendChild(g);
+}
+async function runAutoDetect(explicit){
+  const s=S();
+  if(!s.img) return;
+  if(state.rectView) exitRectView();
+  toast("Detecting…");
+  let result;
+  try{
+    result=await autoDetect(s.img);
+  }catch(err){
+    toast("No card detected — place points manually");
+    return;
+  }
+  let cards=result.cards.filter(c=>c.score>=CV.NO_CARD_SCORE_THRESH);
+  if(cards.length===0){
+    toast("No card detected — place points manually");
+    return;
+  }
+  // cards is presorted desc by score (autoDetect). Card-count hint (toolbar select) lets the
+  // user assert the true count and skip straight to the top-N — still bounded by the absolute
+  // MIN_KEPT_SCORE floor already applied above, but bypasses the relative gates below.
+  const hint=+(($("cardCountHint")&&$("cardCountHint").value)||0);
+  if(hint>0){
+    cards=cards.slice(0,hint);
+  }else if(cards.length>1){
+    // Never let a lone strong card drag along background/graphic-fragment noise as "extra
+    // cards": a real second/third/fourth card in the same photo is close in both score AND
+    // physical size to the best one; a text/logo fragment on the card surface never is.
+    const bestScore=cards[0].score;
+    const bestArea=cvPolyArea(cards[0].outer);
+    cards=cards.filter(c=>c.score>=bestScore-CV.MULTI_SCORE_GATE && cvPolyArea(c.outer)>=bestArea*CV.MULTI_AREA_RATIO_MIN);
+  }
+  if(cards.length===1){
+    const card=cards[0];
+    if(!hint && card.score<CV.ONE_CARD_SCORE_THRESH){
+      toast("No card detected — place points manually");
+      return;
+    }
+    const alreadyPlaced=s.outer.length+s.inner.length>=8;
+    if(alreadyPlaced && !explicit) return;
+    applyDetectedCard(card);
+    updateUI();
+    toast(card.slab?"Slab detected — measuring the card inside":"Corners auto-detected — drag any point to fine-tune");
+    if(card.innerScore<CV.INNER_UNCERTAIN_THRESH){
+      setTimeout(()=>toast("Inner frame uncertain — check the amber points"),2400);
+    }
+    return;
+  }
+  // multiple candidates: draw tappable outlines, let the user pick
+  drawCandidateOutlines(cards);
+  state.candidates={cards,workScale:result.workScale};
+  toast(`${cards.length} cards detected — click the one to measure`);
+  $("bannerTxt").innerHTML=`<b>${cards.length} cards detected</b><small>Click the outline of the card you want to measure.</small>`;
+  $("bannerDot").className="dot cyan";
+  $("banner").style.display="flex";
+}
+
 // ---------- Coordinate transforms ----------
 function applyTransform(){
   scene.style.transform=`translate(${state.tx}px,${state.ty}px) scale(${state.s})`;
@@ -679,12 +1486,14 @@ function screenToImage(clientX,clientY){
 function fit(){
   const r=stage.getBoundingClientRect();
   const side=S();
-  if(!side.W) return;
+  const vw=(state.rectView&&side.rect)?side.rect.W:side.W;
+  const vh=(state.rectView&&side.rect)?side.rect.H:side.H;
+  if(!vw) return;
   const pad=70;
-  const s=Math.min((r.width-pad)/side.W,(r.height-pad)/side.H);
+  const s=Math.min((r.width-pad)/vw,(r.height-pad)/vh);
   state.s=s;
-  state.tx=(r.width-side.W*s)/2;
-  state.ty=(r.height-side.H*s)/2;
+  state.tx=(r.width-vw*s)/2;
+  state.ty=(r.height-vh*s)/2;
   applyTransform();
 }
 function zoomAt(clientX,clientY,factor){
@@ -702,12 +1511,14 @@ function loadFile(file){
   const url=URL.createObjectURL(file);
   const im=new Image();
   im.onload=()=>{
+    clearCandidates();
     const side=S();
+    state.rectView=false; $("straightenBtn").classList.remove("on");
     side.img=im; side.W=im.naturalWidth; side.H=im.naturalHeight; side.url=url;
     img.src=url; img.width=side.W; img.height=side.H;
     ov.setAttribute("width",side.W); ov.setAttribute("height",side.H);
     ov.setAttribute("viewBox",`0 0 ${side.W} ${side.H}`);
-    side.outer=[]; side.inner=[]; side.result=null; side.warp=null;
+    side.outer=[]; side.inner=[]; side.result=null; side.warp=null; side.rect=null;
     dropzone.classList.add("hidden");
     $("toolbar").style.display="flex";
     $("zoomLevel").style.display="block";
@@ -715,11 +1526,13 @@ function loadFile(file){
     fit();
     accSet("guideSec", false, {auto:true});
     updateUI();
+    runAutoDetect(false);
   };
   im.onerror=()=>toast("Could not read that image");
   im.src=url;
 }
 function loadActiveSide(){
+  clearCandidates();
   const s=S();
   if(s.img){
     img.src=s.url; img.width=s.W; img.height=s.H;
@@ -772,6 +1585,8 @@ function updateUI(){
   $("radiusSec").style.display = oDone ? "block" : "none";
   if(set==="outer") accSet("radiusSec", true, {auto:true});
   else if(set==="done") accSet("radiusSec", false, {auto:true});
+  $("borderSec").style.display = oDone ? "block" : "none";
+  accSet("borderSec", oDone, {auto:true});
   $("colorsSec").style.display = oDone ? "block" : "none";
   // banner
   const b=$("banner"), txt=$("bannerTxt"), dot=$("bannerDot"), btn=$("bannerBtn");
@@ -799,14 +1614,22 @@ function setPill(n,active,done){
 
 // ---------- Overlay rendering ----------
 function px(v){return v/state.s;} // screen px -> image units
+// Projects an image-space point into the CURRENT view's coordinate space: itself in normal
+// mode, or through the active side's rect homography while the straightened view is showing.
+function toView(p){ return (state.rectView && S().rect) ? applyH(S().rect.Hs2d,p.x,p.y) : p; }
 function renderOverlay(){
+  const candidateLayer=$("candidateLayer"); // preserved across redraws: see clearCandidates()
   while(ov.firstChild) ov.removeChild(ov.firstChild);
+  if(candidateLayer) ov.appendChild(candidateLayer);
   const s=S();
   if(!s.img) return;
-  const all=[["outer",s.outer,state.colors.outer],["inner",s.inner,state.colors.inner]];
+  const all=state.rectView
+    ? [["inner",s.inner,state.colors.inner]]                                    // outer edge IS the canvas edge in rect view
+    : [["outer",s.outer,state.colors.outer],["inner",s.inner,state.colors.inner]];
 
   // polygons
-  all.forEach(([set,pts,col])=>{
+  all.forEach(([set,rawPts,col])=>{
+    const pts=rawPts.map(toView);
     if(pts.length<2) return;
     const complete=pts.length===4;
     const points=pts.map(p=>`${p.x},${p.y}`).join(" ")+(complete?` ${pts[0].x},${pts[0].y}`:"");
@@ -833,15 +1656,15 @@ function renderOverlay(){
     ov.appendChild(poly);
   });
 
-  // rounded-corner guides on the outer corners (Pokémon cards have rounded edges)
-  if(s.outer.length===4){ for(let i=0;i<4;i++) drawCornerGuide(i); }
+  // rounded-corner guides on the outer corners (hidden in rect view — no outer corners to guide)
+  if(!state.rectView && s.outer.length===4){ for(let i=0;i<4;i++) drawCornerGuide(i); }
 
   // margins (only when complete)
   if(currentSet()==="done"){ drawMargins(); }
 
   // handles
-  all.forEach(([set,pts,col])=>{
-    pts.forEach((p,i)=>drawHandle(set,i,p,col));
+  all.forEach(([set,rawPts,col])=>{
+    rawPts.forEach((p,i)=>drawHandle(set,i,toView(p),col));
   });
 }
 function el(tag){return document.createElementNS(SVGNS,tag);}
@@ -858,7 +1681,7 @@ function drawCornerGuide(i){
   const dirA=norm(sub(o[(i+1)%4],p));   // toward next corner (one card edge)
   const dirB=norm(sub(o[(i+3)%4],p));   // toward previous corner (other card edge)
   const eLen=(len(sub(o[(i+1)%4],p))+len(sub(o[(i+3)%4],p)))/2;
-  const r=Math.max(2,(state.cornerR||0.045)*eLen);
+  const r=Math.max(2,(state.cornerR||0.04)*eLen);
   const tA=add(p,mul(dirA,r)), tB=add(p,mul(dirB,r));
   const c=add(p,add(mul(dirA,r),mul(dirB,r)));   // center of the rounding circle (inside the corner)
   let a0=Math.atan2(tA.y-c.y,tA.x-c.x), a1=Math.atan2(tB.y-c.y,tB.x-c.x);
@@ -926,7 +1749,7 @@ function drawHandle(set,i,p,col){
 }
 function drawMargins(){
   const side=S();
-  const o=side.outer,inr=side.inner;
+  const o=side.outer.map(toView),inr=side.inner.map(toView);
   const uX=norm(add(sub(o[1],o[0]),sub(o[2],o[3])));
   const uY=norm(add(sub(o[3],o[0]),sub(o[2],o[1])));
   // representative segment midpoints for each side
@@ -981,7 +1804,8 @@ window.addEventListener("pointermove",e=>{
   if(state.drag){
     if(e.pointerId!==state.drag.pointerId) return;   // ignore other pointers/touches
     const s=S();
-    const p=screenToImage(e.clientX,e.clientY);
+    const vp=screenToImage(e.clientX,e.clientY);
+    const p=(state.rectView&&s.rect)?applyH(s.rect.Hd2s,vp.x,vp.y):vp;
     p.x=Math.max(0,Math.min(s.W,p.x));p.y=Math.max(0,Math.min(s.H,p.y));
     (state.drag.set==="outer"?s.outer:s.inner)[state.drag.idx]=p;
     if(currentSet()==="done") compute(); else renderOverlay();
@@ -999,6 +1823,7 @@ window.addEventListener("pointermove",e=>{
   }
 });
 function endDrag(){
+  if(state.drag&&state.drag.set==="outer"){ S().rect=null; }
   state.drag=null;
   document.querySelectorAll("#overlay g").forEach(g=>g.style.cursor="grab");
 }
@@ -1011,13 +1836,29 @@ window.addEventListener("pointerup",e=>{
   if(state.pan){
     if(e.pointerId!==state.pan.id) return;
     const wasClick=state.pan.moved<=PAN_THRESH;
-    if(wasClick && currentSet()!=="done"){
-      const p=screenToImage(e.clientX,e.clientY);
-      const s=S();
-      if(p.x>=0&&p.y>=0&&p.x<=s.W&&p.y<=s.H){
-        if(currentSet()==="outer") s.outer.push(p);
-        else s.inner.push(p);
-        updateUI();
+    if(wasClick && colorPicking){
+      pickBorderColor(e.clientX,e.clientY);
+    }else if(wasClick && state.candidates){
+      // Candidate outlines swallow no events: the stage captures the pointer (setPointerCapture),
+      // so the SVG polygons' click handlers never fire from a real mouse — resolve the tap here.
+      const vp=screenToImage(e.clientX,e.clientY);
+      const hit=state.candidates.cards.find(c=>pointInQuad(vp,c.outer));
+      clearCandidates();
+      if(hit) applyDetectedCard(hit);
+      updateUI();
+      if(!hit) toast("Selection cleared — place points manually or hit ✨ Auto again");
+    }else if(wasClick && currentSet()!=="done"){
+      if(state.rectView && currentSet()==="outer"){
+        toast("Turn off Straighten to place outer corners");
+      }else{
+        const vp=screenToImage(e.clientX,e.clientY);
+        const s=S();
+        const p=(state.rectView&&s.rect)?applyH(s.rect.Hd2s,vp.x,vp.y):vp;
+        if(p.x>=0&&p.y>=0&&p.x<=s.W&&p.y<=s.H){
+          if(currentSet()==="outer") s.outer.push(p);
+          else s.inner.push(p);
+          updateUI();
+        }
       }
     }
     state.pan=null;
@@ -1044,17 +1885,66 @@ stage.addEventListener("wheel",e=>{
 $("zoomIn").onclick=()=>{const r=stage.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1.25);};
 $("zoomOut").onclick=()=>{const r=stage.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,1/1.25);};
 $("fitBtn").onclick=fit;
+$("autoBtn").onclick=()=>{ if(!S().img) return; runAutoDetect(true); };
+$("straightenBtn").onclick=()=>{
+  if(!S().img) return;
+  if(state.rectView) exitRectView(); else enterRectView();
+};
+function buildRectCache(s){
+  const o=s.outer;
+  const wTop=Math.hypot(o[1].x-o[0].x,o[1].y-o[0].y);
+  const wBot=Math.hypot(o[2].x-o[3].x,o[2].y-o[3].y);
+  const hL=Math.hypot(o[3].x-o[0].x,o[3].y-o[0].y);
+  const hR=Math.hypot(o[2].x-o[1].x,o[2].y-o[1].y);
+  let W=Math.round((wTop+wBot)/2), H=Math.round((hL+hR)/2);
+  const MAXL=1500, MINS=50;
+  let scale=1;
+  const longer=Math.max(W,H), shorter=Math.min(W,H);
+  if(longer*scale>MAXL) scale=MAXL/longer;
+  if(shorter*scale<MINS) scale=MINS/shorter;
+  W=Math.max(1,Math.round(W*scale)); H=Math.max(1,Math.round(H*scale));
+  const warp=makeWarp(W,H);
+  const rectCorners=[{x:0,y:0},{x:W,y:0},{x:W,y:H},{x:0,y:H}];
+  return {canvas:warp.canvas, W, H, Hs2d:homography(o,rectCorners), Hd2s:homography(rectCorners,o)};
+}
+function enterRectView(){
+  const s=S();
+  if(s.outer.length!==4||!isProperQuad(s.outer)){ toast("Place the 4 outer corners first"); return; }
+  if(!s.rect) s.rect=buildRectCache(s);
+  state.rectView=true;
+  $("straightenBtn").classList.add("on");
+  img.src=s.rect.canvas.toDataURL("image/png");
+  img.width=s.rect.W; img.height=s.rect.H;
+  ov.setAttribute("width",s.rect.W); ov.setAttribute("height",s.rect.H);
+  ov.setAttribute("viewBox",`0 0 ${s.rect.W} ${s.rect.H}`);
+  fit();
+  updateUI();
+}
+function exitRectView(){
+  state.rectView=false;
+  $("straightenBtn").classList.remove("on");
+  loadActiveSide();
+}
 $("undoBtn").onclick=()=>{
   const s=S();
   if(s.inner.length){s.inner.pop();}
-  else if(s.outer.length){s.outer.pop();}
+  else if(s.outer.length){
+    if(state.rectView) exitRectView();
+    s.outer.pop(); s.rect=null;
+  }
   else return;
   s.result=null;s.warp=null;updateUI();
 };
 $("clearBtn").onclick=()=>{
   const s=S();
-  if(!s.outer.length&&!s.inner.length)return;
-  s.outer=[];s.inner=[];s.result=null;s.warp=null;updateUI();
+  const hadCandidates=!!state.candidates;
+  clearCandidates();
+  if(!s.outer.length&&!s.inner.length){
+    if(hadCandidates) updateUI();
+    return;
+  }
+  if(state.rectView) exitRectView();
+  s.outer=[];s.inner=[];s.result=null;s.warp=null;s.rect=null;updateUI();
   toast("Points cleared");
 };
 $("cornerR").addEventListener("input",e=>{
@@ -1077,12 +1967,138 @@ $("colorsReset").addEventListener("click",()=>{
   renderOverlay();
   if(S().result) drawSlab($("slabCanvas"));
 });
+
+// ---------- Border-color inner-frame detection ----------
+let colorPicking=false;
+function cvAutoBorderColor(data,w,h){
+  const in1=Math.max(2,Math.round(Math.min(w,h)*0.012));
+  const in2=Math.max(in1+2,Math.round(Math.min(w,h)*0.03));
+  const rs=[],gs=[],bs=[];
+  const push=(x,y)=>{const o=(y*w+x)*4;rs.push(data[o]);gs.push(data[o+1]);bs.push(data[o+2]);};
+  for(let dpt=in1;dpt<=in2;dpt+=2){
+    for(let x=Math.round(w*0.08);x<w*0.92;x+=4){ push(x,dpt); push(x,h-1-dpt); }
+    for(let y=Math.round(h*0.08);y<h*0.92;y+=4){ push(dpt,y); push(w-1-dpt,y); }
+  }
+  const med=a=>{a.sort((x,y)=>x-y);return a[a.length>>1];};
+  return [med(rs),med(gs),med(bs)];
+}
+function cvMeasureBorder(data,w,h,color,tol){
+  const tol2=tol*tol;
+  const [rr,rg,rb]=color;
+  const match=o=>{ const dr=data[o]-rr,dg=data[o+1]-rg,db=data[o+2]-rb; return dr*dr+dg*dg+db*db<tol2; };
+  const sustain=dim=>Math.max(8,Math.round(dim*0.012));
+  const lead=dim=>Math.max(4,Math.round(dim*0.05));
+  const cap=dim=>Math.round(dim*0.30);
+  function scanLine(getOffset,dim){
+    const L=lead(dim),SUS=sustain(dim),CAP=cap(dim);
+    let started=-1;
+    for(let i=0;i<L;i++){ if(match(getOffset(i))){started=i;break;} }
+    if(started<0) return null;
+    let miss=0;
+    for(let i=started;i<CAP;i++){
+      if(match(getOffset(i))) miss=0;
+      else{ miss++; if(miss>=SUS) return i-SUS+1; }
+    }
+    return null;
+  }
+  function collect(side){
+    const vals=[];
+    if(side==="left"||side==="right"){
+      const step=Math.max(1,Math.round(h/400));
+      for(let y=Math.round(h*0.06); y<h*0.94; y+=step){
+        const off= side==="left" ? i=>(y*w+i)*4 : i=>(y*w+(w-1-i))*4;
+        const v=scanLine(off,w); if(v!==null) vals.push(v);
+      }
+    }else{
+      const step=Math.max(1,Math.round(w/400));
+      for(let x=Math.round(w*0.06); x<w*0.94; x+=step){
+        const off= side==="top" ? i=>(i*w+x)*4 : i=>((h-1-i)*w+x)*4;
+        const v=scanLine(off,h); if(v!==null) vals.push(v);
+      }
+    }
+    if(vals.length<10) return null;
+    vals.sort((a,b)=>a-b);
+    return vals[vals.length>>1];
+  }
+  return { left:collect("left"), right:collect("right"), top:collect("top"), bottom:collect("bottom") };
+}
+function colorDetectInner(){
+  const s=S();
+  if(s.outer.length!==4||!isProperQuad(s.outer)){ toast("Place the 4 outer corners first"); return; }
+  const RW=1000, RH=1400;
+  const warp=makeWarp(RW,RH);
+  const data=warp.canvas.getContext("2d").getImageData(0,0,RW,RH).data;
+  if(state.border.mode==="auto"||!state.border.color){
+    state.border.color=cvAutoBorderColor(data,RW,RH);
+    $("borderSwatch").style.background=`rgb(${state.border.color.join(",")})`;
+  }
+  const m=cvMeasureBorder(data,RW,RH,state.border.color,state.border.tol);
+  const missing=["left","right","top","bottom"].filter(k=>m[k]===null);
+  if(missing.length){
+    toast(`Border not found on: ${missing.join(", ")} — try the pipette or raise tolerance`);
+    return;
+  }
+  const rectFrame=[{x:0,y:0},{x:RW,y:0},{x:RW,y:RH},{x:0,y:RH}];
+  const Hd2s=homography(rectFrame,s.outer);
+  const insetCorners=[
+    {x:m.left,y:m.top},{x:RW-m.right,y:m.top},{x:RW-m.right,y:RH-m.bottom},{x:m.left,y:RH-m.bottom}
+  ];
+  s.inner=insetCorners.map(p=>applyH(Hd2s,p.x,p.y));
+  s.result=null; s.warp=null;
+  state.border.applied=true;
+  updateUI();
+  toast("Inner frame detected from border color — fine-tune if needed");
+}
+function pickBorderColor(clientX,clientY){
+  const s=S();
+  const vp=screenToImage(clientX,clientY);
+  const p=(state.rectView&&s.rect)?applyH(s.rect.Hd2s,vp.x,vp.y):vp;
+  const endPick=()=>{ colorPicking=false; $("borderPick").classList.remove("on"); stage.classList.remove("color-picking"); };
+  const x=Math.round(p.x), y=Math.round(p.y);
+  if(x<0||y<0||x>=s.W||y>=s.H||!s.img){ endPick(); return; }
+  const oc=document.createElement("canvas"); oc.width=s.W; oc.height=s.H;
+  const octx=oc.getContext("2d",{willReadFrequently:true});
+  octx.drawImage(s.img,0,0);
+  const x0=Math.max(0,Math.min(s.W-9,x-4)), y0=Math.max(0,Math.min(s.H-9,y-4));
+  const d=octx.getImageData(x0,y0,9,9).data;
+  let r=0,g=0,b=0;
+  for(let i=0;i<81;i++){ r+=d[i*4]; g+=d[i*4+1]; b+=d[i*4+2]; }
+  state.border.color=[Math.round(r/81),Math.round(g/81),Math.round(b/81)];
+  state.border.mode="manual";
+  $("borderSwatch").style.background=`rgb(${state.border.color.join(",")})`;
+  endPick();
+  if(s.outer.length===4&&isProperQuad(s.outer)) colorDetectInner();
+}
+$("borderAuto").onclick=()=>{
+  state.border.mode="auto"; state.border.color=null;
+  $("borderAuto").classList.add("on"); $("borderPick").classList.remove("on");
+  colorPicking=false; stage.classList.remove("color-picking");
+  if(S().outer.length===4&&isProperQuad(S().outer)) colorDetectInner();
+};
+$("borderPick").onclick=()=>{
+  colorPicking=!colorPicking;
+  $("borderPick").classList.toggle("on",colorPicking);
+  if(colorPicking) $("borderAuto").classList.remove("on");
+  stage.classList.toggle("color-picking",colorPicking);
+};
+let borderTolTimer=null;
+$("borderTol").addEventListener("input",e=>{
+  state.border.tol=+e.target.value;
+  $("borderTolVal").textContent=e.target.value;
+  if(state.border.applied && S().outer.length===4 && isProperQuad(S().outer)){
+    clearTimeout(borderTolTimer);
+    borderTolTimer=setTimeout(colorDetectInner,150);
+  }
+});
+$("colorDetectBtn").onclick=()=>colorDetectInner();
+
 // Front/Back + grading company toggles
 $("sideToggle").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b)return;
   if(b.dataset.side===state.side) return;
   state.side=b.dataset.side;
   [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c.dataset.side===state.side));
+  state.rectView=false; $("straightenBtn").classList.remove("on");
   loadActiveSide();
 });
 $("companyToggle").addEventListener("click",e=>{
@@ -1439,7 +2455,7 @@ function renderSlabInto(ctx,X,Y,W,H){
   if(dh>cwh){dh=cwh;dw=dh*ar;}
   const dx=cwx+(cww-dw)/2, dy=cwy+(cwh-dh)/2;
   // card bg — corners rounded to match the card's rounded edges
-  const rad=Math.max(3,(state.cornerR||0.045)*dw);
+  const rad=Math.max(3,(state.cornerR||0.04)*dw);
   roundRect(ctx,dx-2,dy-2,dw+4,dh+4,rad+1);ctx.fillStyle="#000";ctx.fill();
   ctx.save();
   roundRect(ctx,dx,dy,dw,dh,rad);ctx.clip();
@@ -1565,13 +2581,22 @@ function download(canvas,name){
     a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);
   },"image/png");
 }
-$("dlReport").onclick=()=>{const cv=drawReport();if(cv){download(cv,"centering-report.png");toast("Report downloaded");}};
+// Unique per-download tag so repeated exports never collide / need renaming
+const dlTag=()=>Math.random().toString(36).slice(2,8);
+$("dlReport").onclick=()=>{const cv=drawReport();if(cv){download(cv,`centering-report-${dlTag()}.png`);toast("Report downloaded");}};
 $("dlSlab").onclick=()=>{
   const cv=document.createElement("canvas");const W=600,H=860;
   cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
   ctx.fillStyle="#0b0f14";ctx.fillRect(0,0,W,H);
   renderSlabInto(ctx,20,20,W-40,H-40);
-  download(cv,"slab.png");toast("Slab downloaded");
+  download(cv,`slab-${dlTag()}.png`);toast("Slab downloaded");
+};
+$("dlStraight").onclick=()=>{
+  const s=S();
+  if(s.outer.length!==4||!isProperQuad(s.outer)){ toast("Place the 4 outer corners first"); return; }
+  if(!s.rect) s.rect=buildRectCache(s);
+  download(s.rect.canvas,`straightened-${state.side}-${dlTag()}.png`);
+  toast("Straightened card downloaded");
 };
 
 // ---------- Toast ----------
