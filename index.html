@@ -1526,7 +1526,6 @@ function loadFile(file){
     fit();
     accSet("guideSec", false, {auto:true});
     updateUI();
-    runAutoDetect(false);
   };
   im.onerror=()=>toast("Could not read that image");
   im.src=url;
